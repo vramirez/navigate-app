@@ -6,8 +6,9 @@ WORKDIR /app
 # Copy package files
 COPY frontend/package*.json ./
 
-# Install dependencies
-RUN npm install
+# Clean npm cache and install dependencies with verbose logging
+RUN npm cache clean --force && \
+    npm install --verbose --no-optional
 
 # Copy project files
 COPY frontend/ ./
