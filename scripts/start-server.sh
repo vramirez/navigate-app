@@ -14,9 +14,9 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Check if docker-compose is available
-if ! command -v docker-compose &> /dev/null; then
-    echo "❌ Error: docker-compose is not installed."
+# Check if docker compose is available
+if ! command -v docker compose &> /dev/null; then
+    echo "❌ Error: docker compose is not installed."
     exit 1
 fi
 
@@ -47,11 +47,11 @@ wait_for_service() {
 
 # Stop any existing containers
 echo "🛑 Stopping any existing containers..."
-docker-compose -f docker/docker-compose.dev.yml down --remove-orphans
+docker compose -f docker/docker-compose.dev.yml down --remove-orphans
 
 # Build and start all services
 echo "🏗️  Building and starting all services..."
-docker-compose -f docker/docker-compose.dev.yml up --build -d
+docker compose -f docker/docker-compose.dev.yml up --build -d
 
 # Wait for database to be ready
 echo "⏳ Waiting for PostgreSQL to be ready..."
@@ -74,10 +74,10 @@ echo "2. Visit http://localhost:8000/admin to manage data as admin"
 echo "3. Visit http://localhost:3000 to use the client application"
 echo ""
 echo "🛑 To stop all services:"
-echo "docker-compose -f docker/docker-compose.dev.yml down"
+echo "docker compose -f docker/docker-compose.dev.yml down"
 echo ""
 echo "📊 To view logs:"
-echo "docker-compose -f docker/docker-compose.dev.yml logs -f [service_name]"
+echo "docker compose -f docker/docker-compose.dev.yml logs -f [service_name]"
 echo ""
 echo "Services:"
 echo "- frontend: React application"

@@ -30,9 +30,9 @@ fi
 # Show current data status
 echo ""
 echo "📊 Current system status:"
-if docker-compose -f docker/docker-compose.dev.yml ps | grep -q "Up"; then
+if docker compose -f docker/docker-compose.dev.yml ps | grep -q "Up"; then
     echo "   • Status: Services are RUNNING"
-    docker-compose -f docker/docker-compose.dev.yml ps --format "table {{.Service}}\t{{.State}}"
+    docker compose -f docker/docker-compose.dev.yml ps --format "table {{.Service}}\t{{.State}}"
 else
     echo "   • Status: Services are stopped"
 fi
@@ -89,9 +89,9 @@ if [ "$backup_choice" = "y" ] || [ "$backup_choice" = "Y" ]; then
     echo "📦 Creating backup in $backup_dir..."
     
     # Backup database if running
-    if docker-compose -f docker/docker-compose.dev.yml ps db | grep -q "Up"; then
+    if docker compose -f docker/docker-compose.dev.yml ps db | grep -q "Up"; then
         echo "   • Backing up database..."
-        docker-compose -f docker/docker-compose.dev.yml exec -T db pg_dump -U navigate navigate > "$backup_dir/database.sql" 2>/dev/null || echo "   ⚠️ Database backup failed (might be empty)"
+        docker compose -f docker/docker-compose.dev.yml exec -T db pg_dump -U navigate navigate > "$backup_dir/database.sql" 2>/dev/null || echo "   ⚠️ Database backup failed (might be empty)"
     fi
     
     # Backup important config files
@@ -114,10 +114,10 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 echo "⏹️  Stopping all running containers..."
-docker-compose -f docker/docker-compose.dev.yml down --remove-orphans
+docker compose -f docker/docker-compose.dev.yml down --remove-orphans
 
 echo "🗑️  Removing all volumes and data..."
-docker-compose -f docker/docker-compose.dev.yml down --volumes
+docker compose -f docker/docker-compose.dev.yml down --volumes
 
 echo "🧹 Removing unused Docker resources..."
 docker system prune -f --volumes
@@ -127,7 +127,7 @@ echo "📦 Removing application-specific volumes..."
 docker volume ls -q | grep -E "(navitest|navigate)" | xargs -r docker volume rm || true
 
 echo "🏗️  Removing built images to ensure clean rebuild..."
-docker-compose -f docker/docker-compose.dev.yml down --rmi local || true
+docker compose -f docker/docker-compose.dev.yml down --rmi local || true
 
 echo ""
 echo "✅ Application reset completed successfully!"

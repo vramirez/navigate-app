@@ -15,36 +15,36 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 # Check if containers are running
-if ! docker-compose -f docker/docker-compose.dev.yml ps | grep -q "Up"; then
+if ! docker compose -f docker/docker-compose.dev.yml ps | grep -q "Up"; then
     echo "ℹ️  No containers are currently running."
     exit 0
 fi
 
 echo "📊 Current container status:"
-docker-compose -f docker/docker-compose.dev.yml ps
+docker compose -f docker/docker-compose.dev.yml ps
 
 echo ""
 echo "🔄 Gracefully stopping services in order..."
 
 # Stop services in reverse dependency order
 echo "⏹️  Stopping frontend service..."
-docker-compose -f docker/docker-compose.dev.yml stop frontend
+docker compose -f docker/docker-compose.dev.yml stop frontend
 
 echo "⏹️  Stopping worker service..."
-docker-compose -f docker/docker-compose.dev.yml stop worker
+docker compose -f docker/docker-compose.dev.yml stop worker
 
 echo "⏹️  Stopping backend service..."
-docker-compose -f docker/docker-compose.dev.yml stop backend
+docker compose -f docker/docker-compose.dev.yml stop backend
 
 echo "⏹️  Stopping Redis cache..."
-docker-compose -f docker/docker-compose.dev.yml stop redis
+docker compose -f docker/docker-compose.dev.yml stop redis
 
 echo "⏹️  Stopping PostgreSQL database..."
-docker-compose -f docker/docker-compose.dev.yml stop db
+docker compose -f docker/docker-compose.dev.yml stop db
 
 echo ""
 echo "🧹 Cleaning up containers..."
-docker-compose -f docker/docker-compose.dev.yml down --remove-orphans
+docker compose -f docker/docker-compose.dev.yml down --remove-orphans
 
 echo ""
 echo "✅ All services stopped successfully!"
@@ -62,4 +62,4 @@ echo "🔄 To reset everything:"
 echo "   ./scripts/reset-app.sh"
 echo ""
 echo "📋 To view stopped containers:"
-echo "   docker-compose -f docker/docker-compose.dev.yml ps -a"
+echo "   docker compose -f docker/docker-compose.dev.yml ps -a"

@@ -9,13 +9,13 @@ echo "📰 Creating Mock News and Recommendations..."
 echo "==========================================="
 
 # Check if containers are running
-if ! docker-compose -f docker/docker-compose.dev.yml ps | grep -q "Up"; then
+if ! docker compose -f docker/docker-compose.dev.yml ps | grep -q "Up"; then
     echo "❌ Error: Containers are not running. Please run ./start-server.sh first."
     exit 1
 fi
 
 echo "📰 Creating sample news articles..."
-docker-compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
+docker compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
 from news.models import NewsSource, NewsArticle
 from businesses.models import Business
 from recommendations.models import Recommendation, RecommendationTemplate
@@ -110,7 +110,7 @@ print("✅ Sample news articles created")
 EOF
 
 echo "💡 Creating sample recommendations..."
-docker-compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
+docker compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
 from recommendations.models import Recommendation
 from businesses.models import Business
 from news.models import NewsArticle

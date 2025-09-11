@@ -9,19 +9,19 @@ echo "🔧 Setting up NaviGate Admin and Sample Data..."
 echo "=============================================="
 
 # Check if containers are running
-if ! docker-compose -f docker/docker-compose.dev.yml ps | grep -q "Up"; then
+if ! docker compose -f docker/docker-compose.dev.yml ps | grep -q "Up"; then
     echo "❌ Error: Containers are not running. Please run ./start-server.sh first."
     exit 1
 fi
 
 echo "📦 Running database migrations..."
-docker-compose -f docker/docker-compose.dev.yml exec backend python manage.py migrate
+docker compose -f docker/docker-compose.dev.yml exec backend python manage.py migrate
 
 echo "🗂️  Collecting static files..."
-docker-compose -f docker/docker-compose.dev.yml exec backend python manage.py collectstatic --noinput
+docker compose -f docker/docker-compose.dev.yml exec backend python manage.py collectstatic --noinput
 
 echo "👤 Creating admin superuser..."
-docker-compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
+docker compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
 from django.contrib.auth.models import User
 from businesses.models import Business, AdminUser
 
@@ -124,7 +124,7 @@ EOF
 
 echo ""
 echo "📊 Loading sample news sources..."
-docker-compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
+docker compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
 from news.models import NewsSource
 
 # Colombian news sources
