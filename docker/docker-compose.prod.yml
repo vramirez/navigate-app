@@ -52,7 +52,7 @@ services:
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn navitest.wsgi:application --bind 0.0.0.0:8000"
+             gunicorn navigate.wsgi:application --bind 0.0.0.0:8000"
 
   # Celery Worker for ML processing
   worker:

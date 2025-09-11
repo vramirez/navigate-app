@@ -46,7 +46,7 @@ Keep in mind all "initially" as they mean, based on success those will need to b
 
 
 ## Git
-Please make this a git repository called navitest-app, should have an staging branch called develop and gitshould ignore the claude md file
+Please make this a git repository called navigate-app, should have an staging branch called develop and gitshould ignore the claude md file
 
 ## Testing
 Create a folder called test for internal and temporary creating files for testing and/or debugging. After finishing with them, clean the content of test. This test folder should be excluded from git

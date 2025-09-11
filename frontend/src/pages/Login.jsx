@@ -78,7 +78,7 @@ export default function Login() {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-navitest-600 focus:ring-navitest-500 border-gray-300 rounded"
+                className="h-4 w-4 text-navigate-600 focus:ring-navigate-500 border-gray-300 rounded"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                 {t('auth.rememberMe')}
@@ -86,7 +86,7 @@ export default function Login() {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-navitest-600 hover:text-navitest-500">
+              <a href="#" className="font-medium text-navigate-600 hover:text-navigate-500">
                 {t('auth.forgotPassword')}
               </a>
             </div>

@@ -1,1 +1,0 @@
-# NaviTest Django Project

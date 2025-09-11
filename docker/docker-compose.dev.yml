@@ -5,15 +5,15 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: navitest
-      POSTGRES_USER: navitest
-      POSTGRES_PASSWORD: navitest123
+      POSTGRES_DB: navigate
+      POSTGRES_USER: navigate
+      POSTGRES_PASSWORD: navigate123
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U navitest"]
+      test: ["CMD-SHELL", "pg_isready -U navigate"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -38,7 +38,7 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=1
-      - DATABASE_URL=postgresql://navitest:navitest123@db:5432/navitest
+      - DATABASE_URL=postgresql://navigate:navigate123@db:5432/navigate
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -63,7 +63,7 @@ services:
       dockerfile: docker/Dockerfile.worker
     environment:
       - DEBUG=1
-      - DATABASE_URL=postgresql://navitest:navitest123@db:5432/navitest
+      - DATABASE_URL=postgresql://navigate:navigate123@db:5432/navigate
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0

@@ -57,7 +57,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'navitest.urls'
+ROOT_URLCONF = 'navigate.urls'
 
 TEMPLATES = [
     {
@@ -75,7 +75,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'navitest.wsgi.application'
+WSGI_APPLICATION = 'navigate.wsgi.application'
 
 # Database
 DATABASES = {
@@ -182,7 +182,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'navitest.log',
+            'filename': 'navigate.log',
         },
         'console': {
             'level': 'DEBUG',
@@ -195,7 +195,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'navitest': {
+        'navigate': {
             'handlers': ['file', 'console'],
             'level': 'DEBUG',
             'propagate': True,

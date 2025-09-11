@@ -28,7 +28,7 @@ export default function Sidebar({ open, setOpen }) {
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 flex-shrink-0 items-center px-4 bg-navitest-600">
+      <div className="flex h-16 flex-shrink-0 items-center px-4 bg-navigate-600">
         <h1 className="text-xl font-bold text-white">
           {t('app.name')}
         </h1>
@@ -45,7 +45,7 @@ export default function Sidebar({ open, setOpen }) {
                 to={item.href}
                 className={clsx(
                   isActive
-                    ? 'bg-navitest-100 text-navitest-900'
+                    ? 'bg-navigate-100 text-navigate-900'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
                   'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
                 )}
@@ -53,7 +53,7 @@ export default function Sidebar({ open, setOpen }) {
               >
                 <Icon
                   className={clsx(
-                    isActive ? 'text-navitest-500' : 'text-gray-400 group-hover:text-gray-500',
+                    isActive ? 'text-navigate-500' : 'text-gray-400 group-hover:text-gray-500',
                     'mr-3 flex-shrink-0 h-6 w-6'
                   )}
                   aria-hidden="true"

@@ -76,6 +76,9 @@ Thumbs.db
 # Test folder
 test/
 
+# Backups folder
+backups/
+
 # Claude configuration
 CLAUDE.md
 

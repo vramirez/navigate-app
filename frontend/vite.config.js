@@ -12,8 +12,8 @@ export default defineConfig({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'NaviTest - Business Intelligence',
-        short_name: 'NaviTest',
+        name: 'NaviGate - Business Intelligence',
+        short_name: 'NaviGate',
         description: 'Business Intelligence News Recommender for Colombian businesses',
         theme_color: '#1f2937',
         background_color: '#ffffff',

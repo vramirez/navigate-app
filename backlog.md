@@ -1,4 +1,4 @@
-# NaviTest App - Project Backlog
+# NaviGate App - Project Backlog
 
 ## Current Sprint - Phase 1: Core Infrastructure
 

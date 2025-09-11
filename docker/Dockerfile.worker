@@ -27,4 +27,4 @@ RUN python -m spacy download es_core_news_sm
 COPY backend/ /app/
 
 # Run Celery worker
-CMD ["celery", "-A", "navitest", "worker", "--loglevel=info"]
+CMD ["celery", "-A", "navigate", "worker", "--loglevel=info"]

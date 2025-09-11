@@ -22,7 +22,7 @@ export default function LanguageSwitcher() {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <Menu.Button className="inline-flex items-center w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-navitest-500 focus:ring-offset-2">
+        <Menu.Button className="inline-flex items-center w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-navigate-500 focus:ring-offset-2">
           <span className="mr-2">{currentLanguage.flag}</span>
           <LanguageIcon className="h-4 w-4" aria-hidden="true" />
         </Menu.Button>
@@ -46,7 +46,7 @@ export default function LanguageSwitcher() {
                     onClick={() => changeLanguage(language.code)}
                     className={clsx(
                       active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                      i18n.language === language.code ? 'bg-navitest-50 text-navitest-700' : '',
+                      i18n.language === language.code ? 'bg-navigate-50 text-navigate-700' : '',
                       'group flex w-full items-center px-4 py-2 text-sm'
                     )}
                   >

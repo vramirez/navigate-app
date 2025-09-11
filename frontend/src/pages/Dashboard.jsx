@@ -16,8 +16,8 @@ export default function Dashboard() {
       name: t('dashboard.totalRecommendations'),
       value: '12',
       icon: LightBulbIcon,
-      color: 'text-navitest-600',
-      bgColor: 'bg-navitest-50'
+      color: 'text-navigate-600',
+      bgColor: 'bg-navigate-50'
     },
     {
       name: t('dashboard.highPriority'),
@@ -115,7 +115,7 @@ export default function Dashboard() {
             {t('dashboard.recentNews')}
           </h2>
           <div className="space-y-3">
-            <div className="border-l-4 border-navitest-500 pl-4 py-2">
+            <div className="border-l-4 border-navigate-500 pl-4 py-2">
               <p className="text-sm font-medium text-gray-900">
                 Maratón Internacional de Medellín 2025
               </p>

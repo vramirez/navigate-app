@@ -6,7 +6,7 @@ from django.http import JsonResponse
 
 def health_check(request):
     """Health check endpoint for Docker and monitoring"""
-    return JsonResponse({'status': 'healthy', 'service': 'navitest-api'})
+    return JsonResponse({'status': 'healthy', 'service': 'navigate-api'})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
