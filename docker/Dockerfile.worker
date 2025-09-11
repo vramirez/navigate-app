@@ -1,0 +1,30 @@
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV DEBIAN_FRONTEND noninteractive
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        curl \
+        && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY backend/requirements.txt /app/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
+
+# Download spaCy Spanish model
+RUN python -m spacy download es_core_news_sm
+
+# Copy project
+COPY backend/ /app/
+
+# Run Celery worker
+CMD ["celery", "-A", "navitest", "worker", "--loglevel=info"]

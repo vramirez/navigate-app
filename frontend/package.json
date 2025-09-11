@@ -1,0 +1,45 @@
+{
+  "name": "navitest-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint src --ext js,jsx --fix"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "react-i18next": "^15.0.2",
+    "i18next": "^23.15.1",
+    "i18next-browser-languagedetector": "^8.0.0",
+    "i18next-http-backend": "^2.6.1",
+    "axios": "^1.7.7",
+    "react-query": "^3.39.3",
+    "react-hook-form": "^7.53.0",
+    "react-hot-toast": "^2.4.1",
+    "@headlessui/react": "^2.1.8",
+    "@heroicons/react": "^2.1.5",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "workbox-window": "^7.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "vite": "^5.4.8",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.12",
+    "tailwindcss": "^3.4.13",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "vite-plugin-pwa": "^0.20.5"
+  }
+}

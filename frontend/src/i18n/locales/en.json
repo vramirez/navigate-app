@@ -1,0 +1,166 @@
+{
+  "app": {
+    "name": "NaviTest",
+    "tagline": "Business intelligence for Colombian businesses"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "recommendations": "Recommendations",
+    "business": "My Business",
+    "news": "News",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "loginError": "Login error. Check your credentials.",
+    "registerError": "Registration error. Please try again.",
+    "welcome": "Welcome back",
+    "createAccount": "Create an account"
+  },
+  "business": {
+    "profile": "Business Profile",
+    "name": "Business Name",
+    "type": "Business Type",
+    "city": "City",
+    "description": "Description",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "website": "Website",
+    "targetAudience": "Target Audience",
+    "operatingHours": "Operating Hours",
+    "capacity": "Capacity",
+    "staffCount": "Staff Count",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "businessTypes": {
+    "coffee_shop": "Coffee Shop",
+    "restaurant": "Restaurant",
+    "pub": "Pub/Bar",
+    "bookstore": "Bookstore"
+  },
+  "cities": {
+    "medellin": "Medellín",
+    "bogota": "Bogotá",
+    "cartagena": "Cartagena",
+    "barranquilla": "Barranquilla"
+  },
+  "recommendations": {
+    "title": "Recommendations",
+    "new": "New",
+    "priority": "Priority",
+    "category": "Category",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "urgent": "Urgent",
+    "viewDetails": "View Details",
+    "markAsRead": "Mark as Read",
+    "implement": "Implement",
+    "dismiss": "Dismiss",
+    "feedback": "Feedback",
+    "rating": "Rating"
+  },
+  "categories": {
+    "inventory": "Inventory",
+    "staffing": "Staffing",
+    "marketing": "Marketing",
+    "pricing": "Pricing",
+    "operations": "Operations",
+    "partnerships": "Partnerships",
+    "events": "Events",
+    "seasonal": "Seasonal"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "totalRecommendations": "Total Recommendations",
+    "highPriority": "High Priority",
+    "implemented": "Implemented",
+    "recentNews": "Recent News",
+    "quickActions": "Quick Actions"
+  },
+  "news": {
+    "title": "Relevant News",
+    "source": "Source",
+    "publishedDate": "Published Date",
+    "readMore": "Read More",
+    "relevanceScore": "Relevance Score"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "close": "Close",
+    "submit": "Submit",
+    "reset": "Reset",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "language": {
+    "switch": "Switch Language",
+    "spanish": "Español",
+    "english": "English"
+  },
+  "mockScenarios": {
+    "marathon": {
+      "title": "Medellín Marathon 2025",
+      "description": "Major international marathon scheduled for next month on the city's main avenues.",
+      "date": "2025-10-15",
+      "location": "Medellín Downtown"
+    },
+    "gastronomyFestival": {
+      "title": "Bogotá Gastronomy Festival",
+      "description": "Colombian and international food festival with 200 participating restaurants.",
+      "date": "2025-11-20",
+      "location": "Zona Rosa, Bogotá"
+    },
+    "soccerMatch": {
+      "title": "Copa América Final - Colombia vs Brazil",
+      "description": "Decisive Copa América match that promises to fill the city's bars and restaurants.",
+      "date": "2025-12-10",
+      "location": "Metropolitano Stadium, Barranquilla"
+    },
+    "graduation": {
+      "title": "Universidad Nacional Graduation",
+      "description": "Mass graduation ceremony with over 2000 students and their families.",
+      "date": "2025-11-30",
+      "location": "Universidad Nacional Campus, Bogotá"
+    },
+    "concert": {
+      "title": "Shakira Concert - World Tour",
+      "description": "Concert by the Colombian star as part of her comeback world tour.",
+      "date": "2025-12-15",
+      "location": "Atanasio Girardot, Medellín"
+    },
+    "christmas": {
+      "title": "Christmas Season 2025",
+      "description": "Official start of Christmas season with lighting displays and special events.",
+      "date": "2025-12-01",
+      "location": "All cities"
+    }
+  }
+}

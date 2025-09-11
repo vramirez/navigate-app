@@ -1,0 +1,166 @@
+{
+  "app": {
+    "name": "NaviTest",
+    "tagline": "Inteligencia empresarial para negocios colombianos"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "recommendations": "Recomendaciones",
+    "business": "Mi Negocio",
+    "news": "Noticias",
+    "settings": "Configuración",
+    "logout": "Cerrar Sesión"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "rememberMe": "Recordarme",
+    "loginError": "Error al iniciar sesión. Verifica tus credenciales.",
+    "registerError": "Error al registrarse. Intenta nuevamente.",
+    "welcome": "Bienvenido de nuevo",
+    "createAccount": "Crear una cuenta"
+  },
+  "business": {
+    "profile": "Perfil del Negocio",
+    "name": "Nombre del Negocio",
+    "type": "Tipo de Negocio",
+    "city": "Ciudad",
+    "description": "Descripción",
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "email": "Email",
+    "website": "Sitio Web",
+    "targetAudience": "Público Objetivo",
+    "operatingHours": "Horario de Operación",
+    "capacity": "Capacidad",
+    "staffCount": "Número de Empleados",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "businessTypes": {
+    "coffee_shop": "Cafetería",
+    "restaurant": "Restaurante", 
+    "pub": "Pub/Bar",
+    "bookstore": "Librería"
+  },
+  "cities": {
+    "medellin": "Medellín",
+    "bogota": "Bogotá",
+    "cartagena": "Cartagena",
+    "barranquilla": "Barranquilla"
+  },
+  "recommendations": {
+    "title": "Recomendaciones",
+    "new": "Nuevas",
+    "priority": "Prioridad",
+    "category": "Categoría",
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja",
+    "urgent": "Urgente",
+    "viewDetails": "Ver Detalles",
+    "markAsRead": "Marcar como Leído",
+    "implement": "Implementar",
+    "dismiss": "Descartar",
+    "feedback": "Comentarios",
+    "rating": "Calificación"
+  },
+  "categories": {
+    "inventory": "Inventario",
+    "staffing": "Personal",
+    "marketing": "Marketing",
+    "pricing": "Precios",
+    "operations": "Operaciones",
+    "partnerships": "Alianzas",
+    "events": "Eventos",
+    "seasonal": "Estacional"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido",
+    "totalRecommendations": "Total Recomendaciones",
+    "highPriority": "Alta Prioridad",
+    "implemented": "Implementadas",
+    "recentNews": "Noticias Recientes",
+    "quickActions": "Acciones Rápidas"
+  },
+  "news": {
+    "title": "Noticias Relevantes",
+    "source": "Fuente",
+    "publishedDate": "Fecha de Publicación",
+    "readMore": "Leer Más",
+    "relevanceScore": "Puntuación de Relevancia"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "reset": "Restablecer",
+    "yes": "Sí",
+    "no": "No",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior"
+  },
+  "language": {
+    "switch": "Cambiar Idioma",
+    "spanish": "Español",
+    "english": "English"
+  },
+  "mockScenarios": {
+    "marathon": {
+      "title": "Maratón de Medellín 2025",
+      "description": "Gran maratón internacional programado para el próximo mes en las principales avenidas de la ciudad.",
+      "date": "2025-10-15",
+      "location": "Medellín Centro"
+    },
+    "gastronomyFestival": {
+      "title": "Festival Gastronómico Bogotá",
+      "description": "Festival de comida colombiana e internacional con la participación de 200 restaurantes.",
+      "date": "2025-11-20",
+      "location": "Zona Rosa, Bogotá"
+    },
+    "soccerMatch": {
+      "title": "Final Copa América - Colombia vs Brasil",
+      "description": "Partido decisivo de la Copa América que promete llenar los bares y restaurantes de la ciudad.",
+      "date": "2025-12-10",
+      "location": "Estadio Metropolitano, Barranquilla"
+    },
+    "graduation": {
+      "title": "Graduación Universidad Nacional",
+      "description": "Ceremonia de graduación masiva con más de 2000 estudiantes y sus familias.",
+      "date": "2025-11-30",
+      "location": "Campus Universidad Nacional, Bogotá"
+    },
+    "concert": {
+      "title": "Concierto Shakira - Gira Mundial",
+      "description": "Concierto de la estrella colombiana como parte de su gira mundial de regreso.",
+      "date": "2025-12-15",
+      "location": "Atanasio Girardot, Medellín"
+    },
+    "christmas": {
+      "title": "Temporada Navideña 2025",
+      "description": "Inicio oficial de la temporada navideña con alumbrados y eventos especiales.",
+      "date": "2025-12-01",
+      "location": "Todas las ciudades"
+    }
+  }
+}
