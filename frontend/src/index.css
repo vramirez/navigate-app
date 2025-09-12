@@ -9,7 +9,7 @@
   }
   
   body {
-    @apply text-gray-900 bg-gray-50;
+    @apply text-slate-900 bg-white;
   }
 }
 
@@ -40,6 +40,22 @@
   
   .card {
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  }
+  
+  .news-card {
+    @apply bg-blue-50 rounded-lg shadow-xl border border-blue-300 ring-1 ring-blue-200 p-6 hover:shadow-2xl transition-shadow;
+  }
+  
+  .recommendations-section {
+    @apply border-t border-blue-200 pt-6 bg-blue-50 -mx-6 px-6 pb-6 mt-6 rounded-b-lg;
+  }
+  
+  .news-card-minimized {
+    @apply bg-slate-200 rounded-lg shadow-lg border border-slate-400 ring-1 ring-slate-300 p-4 opacity-80 hover:shadow-xl transition-shadow;
+  }
+  
+  .news-content {
+    @apply bg-cyan-50 border-2 border-cyan-300 shadow-md p-6 rounded-lg;
   }
   
   .priority-urgent {

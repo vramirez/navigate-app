@@ -108,6 +108,27 @@ export default function Dashboard() {
     }))
   }
 
+  const handleRecommendationReset = (recId) => {
+    setRecommendations(prev => {
+      const newState = { ...prev }
+      delete newState[recId]
+      return newState
+    })
+  }
+
+  // Sort news based on like status: liked first, neutral middle, disliked last
+  const sortedNews = [...newsWithRecommendations].sort((a, b) => {
+    const aStatus = newsLikes[a.id]
+    const bStatus = newsLikes[b.id]
+    
+    if (aStatus === 'like' && bStatus !== 'like') return -1
+    if (bStatus === 'like' && aStatus !== 'like') return 1
+    if (aStatus === 'dislike' && bStatus !== 'dislike') return 1
+    if (bStatus === 'dislike' && aStatus !== 'dislike') return -1
+    
+    return 0 // Keep original order for same status
+  })
+
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'urgent': return 'text-red-600 bg-red-50'
@@ -131,25 +152,59 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-slate-800 mb-2">
           {t('dashboard.welcome')}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-slate-600">
           Noticias relevantes y recomendaciones para tu negocio
         </p>
       </div>
 
       {/* News Feed with Embedded Recommendations */}
       <div className="space-y-6">
-        {newsWithRecommendations.map((news) => {
+        {sortedNews.map((news) => {
           const newsLikeStatus = newsLikes[news.id]
           
+          // Render minimized version for disliked news
+          if (newsLikeStatus === 'dislike') {
+            return (
+              <div key={news.id} className="news-card-minimized">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h2 className="text-lg font-bold text-slate-800 mb-1 hover:text-slate-900 transition-colors">
+                      {news.title}
+                    </h2>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <span className="font-medium">{news.source}</span>
+                      <span className="mx-2">•</span>
+                      <span>{news.publishedAt}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 ml-4">
+                    <button
+                      onClick={() => handleNewsLike(news.id, true)}
+                      className="p-2 rounded-full transition-colors text-gray-400 hover:text-green-600 hover:bg-green-50"
+                    >
+                      <HandThumbUpIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleNewsLike(news.id, false)}
+                      className="p-2 rounded-full transition-colors text-red-600 bg-red-50"
+                    >
+                      <HandThumbDownIconSolid className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+          
           return (
-            <div key={news.id} className="card">
+            <div key={news.id} className="news-card">
               {/* News Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h2 className="text-xl font-bold text-slate-800 mb-2 hover:text-slate-900 transition-colors">
                     {news.title}
                   </h2>
                   <div className="flex items-center text-sm text-gray-500 mb-3">
@@ -193,13 +248,15 @@ export default function Dashboard() {
               </div>
 
               {/* News Content */}
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                {news.content}
-              </p>
+              <div className="news-content mb-6">
+                <p className="text-slate-700 leading-relaxed">
+                  {news.content}
+                </p>
+              </div>
 
               {/* Related Recommendations */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="recommendations-section">
+                <h3 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
                   💡 Recomendaciones relacionadas ({news.recommendations.length})
                 </h3>
                 
@@ -215,7 +272,7 @@ export default function Dashboard() {
                             ? 'bg-green-50 border-green-200' 
                             : recStatus === 'ignored'
                             ? 'bg-gray-50 border-gray-200 opacity-60'
-                            : 'bg-white border-gray-200 hover:border-gray-300'
+                            : 'bg-white border-navigate-300 hover:border-navigate-400'
                         }`}
                       >
                         <div className="flex items-start justify-between">
@@ -247,14 +304,30 @@ export default function Dashboard() {
                           {/* Action Buttons */}
                           <div className="flex items-center space-x-2 ml-4">
                             {recStatus === 'done' ? (
-                              <div className="flex items-center text-green-600 bg-green-100 px-3 py-1 rounded-full">
-                                <CheckCircleIcon className="h-4 w-4 mr-1" />
-                                <span className="text-sm font-medium">Completado</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex items-center text-green-600 bg-green-100 px-3 py-1 rounded-full">
+                                  <CheckCircleIcon className="h-4 w-4 mr-1" />
+                                  <span className="text-sm font-medium">Completado</span>
+                                </div>
+                                <button
+                                  onClick={() => handleRecommendationReset(rec.id)}
+                                  className="flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                                >
+                                  Restablecer
+                                </button>
                               </div>
                             ) : recStatus === 'ignored' ? (
-                              <div className="flex items-center text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                                <XCircleIcon className="h-4 w-4 mr-1" />
-                                <span className="text-sm font-medium">Ignorado</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex items-center text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                  <XCircleIcon className="h-4 w-4 mr-1" />
+                                  <span className="text-sm font-medium">Ignorado</span>
+                                </div>
+                                <button
+                                  onClick={() => handleRecommendationReset(rec.id)}
+                                  className="flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                                >
+                                  Restablecer
+                                </button>
                               </div>
                             ) : (
                               <>
