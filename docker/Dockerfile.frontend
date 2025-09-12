@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18-slim
 
 # Set working directory
 WORKDIR /app
@@ -6,9 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY frontend/package*.json ./
 
-# Clean npm cache and install dependencies with verbose logging
-RUN npm cache clean --force && \
-    npm install --verbose --no-optional
+# Install dependencies with legacy peer deps to avoid conflicts
+RUN npm install --legacy-peer-deps
 
 # Copy project files
 COPY frontend/ ./
@@ -16,5 +15,5 @@ COPY frontend/ ./
 # Expose port
 EXPOSE 3000
 
-# Start development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Start with development server bypassing problematic rollup issues
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--force"]

@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -20,8 +20,8 @@ COPY backend/requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
-# Download spaCy Spanish model
-RUN python -m spacy download es_core_news_sm
+# Install spaCy Spanish model via pip (Python 3.12 compatible) - commented for quick testing
+# RUN pip install https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl
 
 # Copy project
 COPY backend/ /app/

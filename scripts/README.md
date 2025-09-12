@@ -81,7 +81,7 @@ This directory contains utility scripts for development and setup.
 
 After running the scripts:
 
-- **Frontend:** http://localhost:3000
+- **Frontend:** http://localhost:3001
 - **Backend API:** http://localhost:8000
 - **Django Admin:** http://localhost:8000/admin
 
@@ -94,7 +94,7 @@ After running the scripts:
 - **Permissions:** Full system access
 
 ### Business Owner
-- **URL:** http://localhost:3000
+- **URL:** http://localhost:3001
 - **Username:** pub_owner (or any email for mock auth)
 - **Password:** pub123 (or any password for mock auth)
 - **Business:** Irish Pub Medellín (Pub/Bar in Medellín)

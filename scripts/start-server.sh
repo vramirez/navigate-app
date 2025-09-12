@@ -24,14 +24,17 @@ fi
 wait_for_service() {
     local service_name=$1
     local port=$2
+    local has_health_endpoint=${3:-false}
     local max_attempts=30
     local attempt=1
     
     echo "⏳ Waiting for $service_name to be ready on port $port..."
     
     while [ $attempt -le $max_attempts ]; do
-        if curl -f -s "http://localhost:$port/health/" > /dev/null 2>&1 || \
-           nc -z localhost $port > /dev/null 2>&1; then
+        if [ "$has_health_endpoint" = "true" ] && curl -f -s "http://localhost:$port/health/" > /dev/null 2>&1; then
+            echo "✅ $service_name is ready!"
+            return 0
+        elif nc -z localhost $port > /dev/null 2>&1; then
             echo "✅ $service_name is ready!"
             return 0
         fi
@@ -58,20 +61,20 @@ echo "⏳ Waiting for PostgreSQL to be ready..."
 sleep 10
 
 # Check if services are healthy
-wait_for_service "Backend API" 8000
-wait_for_service "Frontend" 3000
+wait_for_service "Backend API" 8000 true
+wait_for_service "Frontend" 3001 false
 
 echo ""
 echo "🎉 NaviGate is now running!"
 echo "==============================================="
-echo "Frontend: http://localhost:3000"
+echo "Frontend: http://localhost:3001"
 echo "Backend API: http://localhost:8000"
 echo "Django Admin: http://localhost:8000/admin"
 echo ""
 echo "📋 Next Steps:"
 echo "1. Run: ./setup-admin.sh to create admin user and sample data"
 echo "2. Visit http://localhost:8000/admin to manage data as admin"
-echo "3. Visit http://localhost:3000 to use the client application"
+echo "3. Visit http://localhost:3001 to use the client application"
 echo ""
 echo "🛑 To stop all services:"
 echo "docker compose -f docker/docker-compose.dev.yml down"

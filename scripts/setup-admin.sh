@@ -21,7 +21,7 @@ echo "🗂️  Collecting static files..."
 docker compose -f docker/docker-compose.dev.yml exec backend python manage.py collectstatic --noinput
 
 echo "👤 Creating admin superuser..."
-docker compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
+docker compose -f docker/docker-compose.dev.yml exec -T backend python manage.py shell << 'EOF'
 from django.contrib.auth.models import User
 from businesses.models import Business, AdminUser
 
@@ -116,7 +116,7 @@ print("  Username: admin")
 print("  Password: admin123")
 print("")
 print("Business Owner Access:")
-print("  URL: http://localhost:3000")
+print("  URL: http://localhost:3001")
 print("  Username: pub_owner")
 print("  Password: pub123")
 print("  Business: Irish Pub Medellín (Pub/Bar in Medellín)")
@@ -124,7 +124,7 @@ EOF
 
 echo ""
 echo "📊 Loading sample news sources..."
-docker compose -f docker/docker-compose.dev.yml exec backend python manage.py shell << 'EOF'
+docker compose -f docker/docker-compose.dev.yml exec -T backend python manage.py shell << 'EOF'
 from news.models import NewsSource
 
 # Colombian news sources
@@ -200,7 +200,7 @@ echo "   • Login with admin/admin123"
 echo "   • Explore: Businesses, News Sources, etc."
 echo ""
 echo "2️⃣  CLIENT TESTING:"
-echo "   • Go to http://localhost:3000"
+echo "   • Go to http://localhost:3001"
 echo "   • Use any email/password to 'login' (mock auth)"
 echo "   • Navigate through Dashboard, Recommendations, etc."
 echo ""
