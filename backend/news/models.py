@@ -11,13 +11,257 @@ class NewsSource(models.Model):
         ('rss', 'Feed RSS'),
         ('manual', 'Entrada manual'),
     ]
-    
-    CITIES = [
-        ('nacional', 'Nacional'),
-        ('medellin', 'Medellín'),
-        ('bogota', 'Bogotá'),
-        ('cartagena', 'Cartagena'),
-        ('barranquilla', 'Barranquilla'),
+
+    COUNTRIES = [
+        ('CO', 'Colombia'),
+        ('AD', 'Andorra'),
+        ('AE', 'United Arab Emirates'),
+        ('AF', 'Afghanistan'),
+        ('AG', 'Antigua and Barbuda'),
+        ('AI', 'Anguilla'),
+        ('AL', 'Albania'),
+        ('AM', 'Armenia'),
+        ('AO', 'Angola'),
+        ('AQ', 'Antarctica'),
+        ('AR', 'Argentina'),
+        ('AS', 'American Samoa'),
+        ('AT', 'Austria'),
+        ('AU', 'Australia'),
+        ('AW', 'Aruba'),
+        ('AX', 'Åland Islands'),
+        ('AZ', 'Azerbaijan'),
+        ('BA', 'Bosnia and Herzegovina'),
+        ('BB', 'Barbados'),
+        ('BD', 'Bangladesh'),
+        ('BE', 'Belgium'),
+        ('BF', 'Burkina Faso'),
+        ('BG', 'Bulgaria'),
+        ('BH', 'Bahrain'),
+        ('BI', 'Burundi'),
+        ('BJ', 'Benin'),
+        ('BL', 'Saint Barthélemy'),
+        ('BM', 'Bermuda'),
+        ('BN', 'Brunei Darussalam'),
+        ('BO', 'Bolivia'),
+        ('BQ', 'Bonaire, Sint Eustatius and Saba'),
+        ('BR', 'Brazil'),
+        ('BS', 'Bahamas'),
+        ('BT', 'Bhutan'),
+        ('BV', 'Bouvet Island'),
+        ('BW', 'Botswana'),
+        ('BY', 'Belarus'),
+        ('BZ', 'Belize'),
+        ('CA', 'Canada'),
+        ('CC', 'Cocos (Keeling) Islands'),
+        ('CD', 'Congo, The Democratic Republic of the'),
+        ('CF', 'Central African Republic'),
+        ('CG', 'Congo'),
+        ('CH', 'Switzerland'),
+        ('CI', 'Côte d\'Ivoire'),
+        ('CK', 'Cook Islands'),
+        ('CL', 'Chile'),
+        ('CM', 'Cameroon'),
+        ('CN', 'China'),
+        ('CR', 'Costa Rica'),
+        ('CU', 'Cuba'),
+        ('CV', 'Cape Verde'),
+        ('CW', 'Curaçao'),
+        ('CX', 'Christmas Island'),
+        ('CY', 'Cyprus'),
+        ('CZ', 'Czech Republic'),
+        ('DE', 'Germany'),
+        ('DJ', 'Djibouti'),
+        ('DK', 'Denmark'),
+        ('DM', 'Dominica'),
+        ('DO', 'Dominican Republic'),
+        ('DZ', 'Algeria'),
+        ('EC', 'Ecuador'),
+        ('EE', 'Estonia'),
+        ('EG', 'Egypt'),
+        ('EH', 'Western Sahara'),
+        ('ER', 'Eritrea'),
+        ('ES', 'Spain'),
+        ('ET', 'Ethiopia'),
+        ('FI', 'Finland'),
+        ('FJ', 'Fiji'),
+        ('FK', 'Falkland Islands (Malvinas)'),
+        ('FM', 'Micronesia, Federated States of'),
+        ('FO', 'Faroe Islands'),
+        ('FR', 'France'),
+        ('GA', 'Gabon'),
+        ('GB', 'United Kingdom'),
+        ('GD', 'Grenada'),
+        ('GE', 'Georgia'),
+        ('GF', 'French Guiana'),
+        ('GG', 'Guernsey'),
+        ('GH', 'Ghana'),
+        ('GI', 'Gibraltar'),
+        ('GL', 'Greenland'),
+        ('GM', 'Gambia'),
+        ('GN', 'Guinea'),
+        ('GP', 'Guadeloupe'),
+        ('GQ', 'Equatorial Guinea'),
+        ('GR', 'Greece'),
+        ('GS', 'South Georgia and the South Sandwich Islands'),
+        ('GT', 'Guatemala'),
+        ('GU', 'Guam'),
+        ('GW', 'Guinea-Bissau'),
+        ('GY', 'Guyana'),
+        ('HK', 'Hong Kong'),
+        ('HM', 'Heard Island and McDonald Islands'),
+        ('HN', 'Honduras'),
+        ('HR', 'Croatia'),
+        ('HT', 'Haiti'),
+        ('HU', 'Hungary'),
+        ('ID', 'Indonesia'),
+        ('IE', 'Ireland'),
+        ('IL', 'Israel'),
+        ('IM', 'Isle of Man'),
+        ('IN', 'India'),
+        ('IO', 'British Indian Ocean Territory'),
+        ('IQ', 'Iraq'),
+        ('IR', 'Iran, Islamic Republic of'),
+        ('IS', 'Iceland'),
+        ('IT', 'Italy'),
+        ('JE', 'Jersey'),
+        ('JM', 'Jamaica'),
+        ('JO', 'Jordan'),
+        ('JP', 'Japan'),
+        ('KE', 'Kenya'),
+        ('KG', 'Kyrgyzstan'),
+        ('KH', 'Cambodia'),
+        ('KI', 'Kiribati'),
+        ('KM', 'Comoros'),
+        ('KN', 'Saint Kitts and Nevis'),
+        ('KP', 'Korea, Democratic People\'s Republic of'),
+        ('KR', 'Korea, Republic of'),
+        ('KW', 'Kuwait'),
+        ('KY', 'Cayman Islands'),
+        ('KZ', 'Kazakhstan'),
+        ('LA', 'Lao People\'s Democratic Republic'),
+        ('LB', 'Lebanon'),
+        ('LC', 'Saint Lucia'),
+        ('LI', 'Liechtenstein'),
+        ('LK', 'Sri Lanka'),
+        ('LR', 'Liberia'),
+        ('LS', 'Lesotho'),
+        ('LT', 'Lithuania'),
+        ('LU', 'Luxembourg'),
+        ('LV', 'Latvia'),
+        ('LY', 'Libya'),
+        ('MA', 'Morocco'),
+        ('MC', 'Monaco'),
+        ('MD', 'Moldova, Republic of'),
+        ('ME', 'Montenegro'),
+        ('MF', 'Saint Martin (French part)'),
+        ('MG', 'Madagascar'),
+        ('MH', 'Marshall Islands'),
+        ('MK', 'Macedonia, the former Yugoslav Republic of'),
+        ('ML', 'Mali'),
+        ('MM', 'Myanmar'),
+        ('MN', 'Mongolia'),
+        ('MO', 'Macao'),
+        ('MP', 'Northern Mariana Islands'),
+        ('MQ', 'Martinique'),
+        ('MR', 'Mauritania'),
+        ('MS', 'Montserrat'),
+        ('MT', 'Malta'),
+        ('MU', 'Mauritius'),
+        ('MV', 'Maldives'),
+        ('MW', 'Malawi'),
+        ('MX', 'Mexico'),
+        ('MY', 'Malaysia'),
+        ('MZ', 'Mozambique'),
+        ('NA', 'Namibia'),
+        ('NC', 'New Caledonia'),
+        ('NE', 'Niger'),
+        ('NF', 'Norfolk Island'),
+        ('NG', 'Nigeria'),
+        ('NI', 'Nicaragua'),
+        ('NL', 'Netherlands'),
+        ('NO', 'Norway'),
+        ('NP', 'Nepal'),
+        ('NR', 'Nauru'),
+        ('NU', 'Niue'),
+        ('NZ', 'New Zealand'),
+        ('OM', 'Oman'),
+        ('PA', 'Panama'),
+        ('PE', 'Peru'),
+        ('PF', 'French Polynesia'),
+        ('PG', 'Papua New Guinea'),
+        ('PH', 'Philippines'),
+        ('PK', 'Pakistan'),
+        ('PL', 'Poland'),
+        ('PM', 'Saint Pierre and Miquelon'),
+        ('PN', 'Pitcairn'),
+        ('PR', 'Puerto Rico'),
+        ('PS', 'Palestine, State of'),
+        ('PT', 'Portugal'),
+        ('PW', 'Palau'),
+        ('PY', 'Paraguay'),
+        ('QA', 'Qatar'),
+        ('RE', 'Réunion'),
+        ('RO', 'Romania'),
+        ('RS', 'Serbia'),
+        ('RU', 'Russian Federation'),
+        ('RW', 'Rwanda'),
+        ('SA', 'Saudi Arabia'),
+        ('SB', 'Solomon Islands'),
+        ('SC', 'Seychelles'),
+        ('SD', 'Sudan'),
+        ('SE', 'Sweden'),
+        ('SG', 'Singapore'),
+        ('SH', 'Saint Helena, Ascension and Tristan da Cunha'),
+        ('SI', 'Slovenia'),
+        ('SJ', 'Svalbard and Jan Mayen'),
+        ('SK', 'Slovakia'),
+        ('SL', 'Sierra Leone'),
+        ('SM', 'San Marino'),
+        ('SN', 'Senegal'),
+        ('SO', 'Somalia'),
+        ('SR', 'Suriname'),
+        ('SS', 'South Sudan'),
+        ('ST', 'Sao Tome and Principe'),
+        ('SV', 'El Salvador'),
+        ('SX', 'Sint Maarten (Dutch part)'),
+        ('SY', 'Syrian Arab Republic'),
+        ('SZ', 'Swaziland'),
+        ('TC', 'Turks and Caicos Islands'),
+        ('TD', 'Chad'),
+        ('TF', 'French Southern Territories'),
+        ('TG', 'Togo'),
+        ('TH', 'Thailand'),
+        ('TJ', 'Tajikistan'),
+        ('TK', 'Tokelau'),
+        ('TL', 'Timor-Leste'),
+        ('TM', 'Turkmenistan'),
+        ('TN', 'Tunisia'),
+        ('TO', 'Tonga'),
+        ('TR', 'Turkey'),
+        ('TT', 'Trinidad and Tobago'),
+        ('TV', 'Tuvalu'),
+        ('TW', 'Taiwan, Province of China'),
+        ('TZ', 'Tanzania, United Republic of'),
+        ('UA', 'Ukraine'),
+        ('UG', 'Uganda'),
+        ('UM', 'United States Minor Outlying Islands'),
+        ('US', 'United States'),
+        ('UY', 'Uruguay'),
+        ('UZ', 'Uzbekistan'),
+        ('VA', 'Holy See (Vatican City State)'),
+        ('VC', 'Saint Vincent and the Grenadines'),
+        ('VE', 'Venezuela'),
+        ('VG', 'Virgin Islands, British'),
+        ('VI', 'Virgin Islands, U.S.'),
+        ('VN', 'Viet Nam'),
+        ('VU', 'Vanuatu'),
+        ('WF', 'Wallis and Futuna'),
+        ('WS', 'Samoa'),
+        ('YE', 'Yemen'),
+        ('YT', 'Mayotte'),
+        ('ZA', 'South Africa'),
+        ('ZM', 'Zambia'),
+        ('ZW', 'Zimbabwe'),
     ]
     
     name = models.CharField(max_length=200, verbose_name='Nombre del medio')
@@ -26,16 +270,43 @@ class NewsSource(models.Model):
         choices=SOURCE_TYPES,
         verbose_name='Tipo de fuente'
     )
-    city = models.CharField(
-        max_length=50, 
-        choices=CITIES,
-        verbose_name='Ciudad/Cobertura'
+    country = models.CharField(
+        max_length=2,
+        choices=COUNTRIES,
+        default='CO',
+        verbose_name='País'
     )
     website_url = models.URLField(blank=True, verbose_name='Sitio web')
     rss_url = models.URLField(blank=True, verbose_name='URL del RSS')
     api_endpoint = models.URLField(blank=True, verbose_name='Endpoint API')
     
-    # Scraping configuration
+    # Crawler configuration
+    crawler_url = models.URLField(
+        blank=True,
+        verbose_name='URL para crawling',
+        help_text='URL principal del sitio web para rastreo automático'
+    )
+    rss_discovered = models.BooleanField(
+        default=False,
+        verbose_name='RSS auto-descubierto'
+    )
+    discovered_rss_url = models.URLField(
+        blank=True,
+        verbose_name='URL RSS descubierta'
+    )
+    manual_crawl_enabled = models.BooleanField(
+        default=False,
+        verbose_name='Crawling manual habilitado',
+        help_text='Para sitios sin RSS disponible'
+    )
+    crawl_sections = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Secciones detectadas',
+        help_text='Secciones del sitio web descubiertas para crawling'
+    )
+
+    # Legacy scraping configuration (keep for backwards compatibility)
     scraping_enabled = models.BooleanField(default=False, verbose_name='Scraping habilitado')
     css_selectors = models.JSONField(
         default=dict,
@@ -60,10 +331,65 @@ class NewsSource(models.Model):
     class Meta:
         verbose_name = 'Fuente de noticias'
         verbose_name_plural = 'Fuentes de noticias'
-        ordering = ['city', 'name']
+        ordering = ['country', 'name']
         
     def __str__(self):
-        return f"{self.name} ({self.get_city_display()})"
+        return f"{self.name} ({self.get_country_display()})"
+
+class CrawlHistory(models.Model):
+    """Track crawling history for news sources"""
+    STATUS_CHOICES = [
+        ('success', 'Exitoso'),
+        ('failed', 'Fallido'),
+        ('partial', 'Parcial'),
+    ]
+
+    source = models.ForeignKey(
+        NewsSource,
+        on_delete=models.CASCADE,
+        related_name='crawl_history',
+        verbose_name='Fuente'
+    )
+    crawl_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Fecha de crawling'
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        verbose_name='Estado'
+    )
+    articles_found = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Artículos encontrados'
+    )
+    articles_saved = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Artículos guardados'
+    )
+    error_message = models.TextField(
+        blank=True,
+        verbose_name='Mensaje de error'
+    )
+    crawl_duration = models.DurationField(
+        null=True,
+        blank=True,
+        verbose_name='Duración del crawling'
+    )
+    crawl_type = models.CharField(
+        max_length=10,
+        choices=[('rss', 'RSS'), ('manual', 'Manual')],
+        default='rss',
+        verbose_name='Tipo de crawling'
+    )
+
+    class Meta:
+        verbose_name = 'Historial de crawling'
+        verbose_name_plural = 'Historial de crawling'
+        ordering = ['-crawl_date']
+
+    def __str__(self):
+        return f"{self.source.name} - {self.get_status_display()} ({self.crawl_date.strftime('%Y-%m-%d %H:%M')})"
 
 class NewsArticle(models.Model):
     """Individual news articles from various sources"""
@@ -95,6 +421,12 @@ class NewsArticle(models.Model):
     author = models.CharField(max_length=200, blank=True, verbose_name='Autor')
     published_date = models.DateTimeField(verbose_name='Fecha de publicación')
     section = models.CharField(max_length=100, blank=True, verbose_name='Sección')
+    crawl_section = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name='Sección de crawling',
+        help_text='Sección específica del sitio web desde donde se extrajo el artículo'
+    )
     
     # ML processing results
     event_type = models.CharField(
