@@ -152,10 +152,10 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">
+        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-glacier-200 to-frost-200 mb-4">
           {t('dashboard.welcome')}
         </h1>
-        <p className="text-slate-600">
+        <p className="text-xl text-glacier-300 font-medium">
           Noticias relevantes y recomendaciones para tu negocio
         </p>
       </div>
@@ -171,7 +171,7 @@ export default function Dashboard() {
               <div key={news.id} className="news-card-minimized">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h2 className="text-lg font-bold text-slate-800 mb-1 hover:text-slate-900 transition-colors">
+                    <h2 className="text-xl font-bold text-white mb-2 hover:text-frost-200 transition-colors drop-shadow-lg">
                       {news.title}
                     </h2>
                     <div className="flex items-center text-sm text-gray-500">
@@ -204,7 +204,7 @@ export default function Dashboard() {
               {/* News Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-slate-800 mb-2 hover:text-slate-900 transition-colors">
+                  <h2 className="text-2xl font-bold text-white mb-3 hover:text-frost-200 transition-colors drop-shadow-lg">
                     {news.title}
                   </h2>
                   <div className="flex items-center text-sm text-gray-500 mb-3">
@@ -249,14 +249,14 @@ export default function Dashboard() {
 
               {/* News Content */}
               <div className="news-content mb-6">
-                <p className="text-slate-700 leading-relaxed">
+                <p className="text-arctic-800 text-lg leading-relaxed font-medium">
                   {news.content}
                 </p>
               </div>
 
               {/* Related Recommendations */}
               <div className="recommendations-section">
-                <h3 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center drop-shadow-lg">
                   💡 Recomendaciones relacionadas ({news.recommendations.length})
                 </h3>
                 

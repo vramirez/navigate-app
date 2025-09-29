@@ -9,7 +9,7 @@
   }
   
   body {
-    @apply text-slate-900 bg-white;
+    @apply text-white bg-gradient-to-br from-arctic-900 via-arctic-800 to-glacier-900;
   }
 }
 
@@ -19,11 +19,11 @@
   }
   
   .btn-primary {
-    @apply btn bg-navigate-600 text-white hover:bg-navigate-700 focus:ring-navigate-500;
+    @apply btn bg-glacier-600 text-white hover:bg-glacier-700 focus:ring-glacier-500;
   }
   
   .btn-secondary {
-    @apply btn bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
+    @apply btn bg-arctic-200 text-arctic-900 hover:bg-arctic-300 focus:ring-arctic-500;
   }
   
   .btn-danger {
@@ -35,43 +35,43 @@
   }
   
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-navigate-500 focus:border-navigate-500;
+    @apply w-full px-3 py-2 border border-arctic-300 rounded-md shadow-sm placeholder-arctic-400 focus:outline-none focus:ring-glacier-500 focus:border-glacier-500;
   }
   
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-lg shadow-sm border border-arctic-200 p-6;
   }
   
   .news-card {
-    @apply bg-blue-50 rounded-lg shadow-xl border border-blue-300 ring-1 ring-blue-200 p-6 hover:shadow-2xl transition-shadow;
+    @apply bg-gradient-to-r from-glacier-800 to-frost-800 rounded-xl shadow-2xl border-2 border-glacier-400 ring-2 ring-frost-300 p-8 hover:shadow-frost-500/50 hover:ring-glacier-400 hover:scale-[1.02] transition-all duration-300;
   }
   
   .recommendations-section {
-    @apply border-t border-blue-200 pt-6 bg-blue-50 -mx-6 px-6 pb-6 mt-6 rounded-b-lg;
+    @apply border-t-4 border-frost-400 pt-8 bg-gradient-to-r from-frost-700 to-glacier-700 -mx-8 px-8 pb-8 mt-8 rounded-b-2xl shadow-inner;
   }
   
   .news-card-minimized {
-    @apply bg-slate-200 rounded-lg shadow-lg border border-slate-400 ring-1 ring-slate-300 p-4 opacity-80 hover:shadow-xl transition-shadow;
+    @apply bg-gradient-to-r from-arctic-600 to-arctic-700 rounded-xl shadow-xl border-2 border-arctic-400 ring-1 ring-arctic-300 p-6 opacity-90 hover:shadow-2xl hover:scale-[1.01] transition-all duration-300;
   }
   
   .news-content {
-    @apply bg-cyan-50 border-2 border-cyan-300 shadow-md p-6 rounded-lg;
+    @apply bg-gradient-to-br from-white to-glacier-50 border-2 border-frost-400 shadow-xl p-8 rounded-xl ring-2 ring-frost-300 hover:shadow-2xl transition-all duration-200;
   }
   
   .priority-urgent {
-    @apply bg-red-100 text-red-800 border-red-200;
+    @apply bg-rose-50 text-rose-900 border-rose-200;
   }
   
   .priority-high {
-    @apply bg-orange-100 text-orange-800 border-orange-200;
+    @apply bg-glacier-100 text-glacier-900 border-glacier-200;
   }
   
   .priority-medium {
-    @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+    @apply bg-arctic-100 text-arctic-800 border-arctic-200;
   }
   
   .priority-low {
-    @apply bg-green-100 text-green-800 border-green-200;
+    @apply bg-frost-50 text-frost-900 border-frost-200;
   }
 }
 
@@ -81,21 +81,21 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: #94a3b8;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #64748b;
 }
 
 /* Loading spinner */
 .spinner {
-  @apply animate-spin rounded-full border-b-2 border-navigate-600;
+  @apply animate-spin rounded-full border-b-2 border-glacier-600;
 }
 
 /* PWA specific styles */
