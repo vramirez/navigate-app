@@ -334,9 +334,8 @@ class RSSDiscoveryService:
 
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            # Get title
-            title_tag = soup.find('title')
-            title = title_tag.get_text().strip() if title_tag else None
+            # Get clean site name
+            site_name = self._extract_clean_site_name(soup, website_url)
 
             # Discover main navigation sections
             sections = []
@@ -367,11 +366,80 @@ class RSSDiscoveryService:
             # Remove duplicates and limit
             sections = list(dict.fromkeys(sections))[:8]
 
-            return title, sections
+            return site_name, sections
 
         except Exception as e:
             logger.warning(f"Could not extract website info for {website_url}: {e}")
             return None, []
+
+    def _extract_clean_site_name(self, soup: BeautifulSoup, website_url: str) -> Optional[str]:
+        """
+        Extract clean site name from HTML using multiple strategies
+
+        Priority order:
+        1. og:site_name meta tag
+        2. Site name from title (after separator)
+        3. Domain name (cleaned)
+        """
+        # Strategy 1: Check for og:site_name meta tag
+        og_site_name = soup.find('meta', property='og:site_name')
+        if og_site_name and og_site_name.get('content'):
+            return og_site_name['content'].strip()
+
+        # Strategy 2: Check for application-name meta tag
+        app_name = soup.find('meta', {'name': 'application-name'})
+        if app_name and app_name.get('content'):
+            return app_name['content'].strip()
+
+        # Strategy 3: Extract from title tag (common pattern: "Page Title | Site Name")
+        title_tag = soup.find('title')
+        if title_tag:
+            title_text = title_tag.get_text().strip()
+
+            # Common separators used in titles
+            separators = ['|', '-', '–', '—', ':', '•']
+
+            for separator in separators:
+                if separator in title_text:
+                    parts = [p.strip() for p in title_text.split(separator)]
+                    # Usually the site name is the last part
+                    if len(parts) > 1:
+                        site_name = parts[-1]
+                        # If the last part is too long, it might be part of the title
+                        # In that case, try the second-to-last
+                        if len(site_name) > 50 and len(parts) > 2:
+                            site_name = parts[-2]
+
+                        # Clean common suffixes
+                        site_name = site_name.replace('Noticias', '').strip()
+                        site_name = site_name.replace('News', '').strip()
+
+                        if len(site_name) > 3 and len(site_name) < 50:
+                            return site_name
+
+        # Strategy 4: Extract from domain name as fallback
+        try:
+            parsed_url = urlparse(website_url)
+            domain = parsed_url.netloc
+
+            # Remove www. prefix
+            if domain.startswith('www.'):
+                domain = domain[4:]
+
+            # Remove TLD (.com, .co, etc.)
+            domain_parts = domain.split('.')
+            if len(domain_parts) >= 2:
+                # Take the main domain name
+                site_name = domain_parts[0]
+
+                # Capitalize first letter
+                site_name = site_name.capitalize()
+
+                return site_name
+        except Exception:
+            pass
+
+        return None
 
     def get_feed_info(self, feed_url: str) -> Dict[str, any]:
         """Get detailed information about a specific RSS feed"""

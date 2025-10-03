@@ -402,6 +402,43 @@ class CrawlerOrchestratorService:
                 'last_updated': timezone.now().isoformat()
             }
 
+    def reset_crawl_status(self, source_id: int) -> Dict[str, any]:
+        """
+        Reset crawl status for a source, allowing immediate retry
+
+        Args:
+            source_id: ID of the NewsSource
+
+        Returns:
+            Dict containing reset results
+        """
+        try:
+            source = NewsSource.objects.get(id=source_id)
+        except NewsSource.DoesNotExist:
+            return {
+                'success': False,
+                'error': f"News source with ID {source_id} not found"
+            }
+
+        old_status = source.get_crawl_status_display()
+
+        # Reset status fields
+        source.crawl_status = 'unknown'
+        source.crawl_retry_after = None
+        source.failed_crawl_count = 0
+        source.save()
+
+        logger.info(f"Reset crawl status for {source.name} (was: {old_status})")
+
+        return {
+            'success': True,
+            'source_id': source_id,
+            'source_name': source.name,
+            'old_status': old_status,
+            'new_status': source.get_crawl_status_display(),
+            'message': f"Crawl status reset from '{old_status}' to 'unknown'. Source can now be retried immediately."
+        }
+
     def _recommend_crawling_strategy(self, source: NewsSource) -> str:
         """Recommend the best crawling strategy for a source"""
         if source.rss_discovered and source.discovered_rss_url:

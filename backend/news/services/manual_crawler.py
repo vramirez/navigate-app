@@ -258,6 +258,91 @@ class ManualCrawlerService:
 
         return result
 
+    def detect_spa_framework(self, website_url: str) -> Dict[str, any]:
+        """
+        Detect if a website is a Single Page Application (SPA) using JavaScript frameworks
+
+        Args:
+            website_url: URL of the website to analyze
+
+        Returns:
+            Dict containing detection results
+        """
+        result = {
+            'is_spa': False,
+            'framework': None,
+            'confidence': 'low',
+            'indicators': [],
+            'article_link_ratio': 0.0
+        }
+
+        try:
+            response = self.session.get(website_url, timeout=self.timeout)
+            response.raise_for_status()
+
+            content = response.text.lower()
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Check for JavaScript framework indicators
+            frameworks_detected = []
+
+            if 'react' in content or '__react' in content or 'data-reactroot' in content:
+                frameworks_detected.append('React')
+            if 'vue' in content or 'v-app' in content or '__vue' in content:
+                frameworks_detected.append('Vue')
+            if 'ng-app' in content or 'angular' in content or 'ng-version' in content:
+                frameworks_detected.append('Angular')
+            if '__next' in content or '_next' in content:
+                frameworks_detected.append('Next.js')
+
+            # Check for minimal HTML content (typical of SPAs)
+            body_text = soup.find('body')
+            if body_text:
+                visible_text = body_text.get_text(strip=True)
+                # If body has very little text but page loads in browser, likely SPA
+                if len(visible_text) < 500:
+                    result['indicators'].append('minimal_body_content')
+
+            # Check script to content ratio
+            scripts = soup.find_all('script')
+            script_size = sum(len(str(script)) for script in scripts)
+            body_size = len(str(soup.find('body'))) if soup.find('body') else 0
+
+            if body_size > 0 and script_size > body_size * 2:
+                result['indicators'].append('high_script_ratio')
+
+            # Check for article-like links
+            total_links = len(soup.find_all('a', href=True))
+            article_patterns = [
+                'article', 'post', 'noticia', 'news', 'story'
+            ]
+            article_like_links = 0
+            for link in soup.find_all('a', href=True):
+                href = link.get('href', '').lower()
+                text = link.get_text().lower()
+                if any(pattern in href or pattern in text for pattern in article_patterns):
+                    article_like_links += 1
+
+            if total_links > 10:
+                result['article_link_ratio'] = article_like_links / total_links
+                if result['article_link_ratio'] < 0.05:  # Less than 5% article links
+                    result['indicators'].append('low_article_link_ratio')
+
+            # Determine if it's a SPA
+            if frameworks_detected:
+                result['is_spa'] = True
+                result['framework'] = ', '.join(frameworks_detected)
+                result['confidence'] = 'high'
+            elif len(result['indicators']) >= 2:
+                result['is_spa'] = True
+                result['framework'] = 'Unknown JavaScript framework'
+                result['confidence'] = 'medium'
+
+        except Exception as e:
+            logger.warning(f"SPA detection failed for {website_url}: {e}")
+
+        return result
+
     def _check_robots_txt(self, url: str) -> bool:
         """Check if crawling is allowed by robots.txt"""
         try:

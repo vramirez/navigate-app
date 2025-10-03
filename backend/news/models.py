@@ -263,10 +263,18 @@ class NewsSource(models.Model):
         ('ZM', 'Zambia'),
         ('ZW', 'Zimbabwe'),
     ]
-    
+
+    CRAWL_STATUS_CHOICES = [
+        ('unknown', 'No probado'),
+        ('rss_available', 'RSS disponible'),
+        ('manual_crawlable', 'Crawling manual funciona'),
+        ('spa_detected', 'SPA/JavaScript detectado'),
+        ('uncrawlable', 'No se puede rastrear'),
+    ]
+
     name = models.CharField(max_length=200, verbose_name='Nombre del medio')
     source_type = models.CharField(
-        max_length=20, 
+        max_length=20,
         choices=SOURCE_TYPES,
         verbose_name='Tipo de fuente'
     )
@@ -279,7 +287,7 @@ class NewsSource(models.Model):
     website_url = models.URLField(blank=True, verbose_name='Sitio web')
     rss_url = models.URLField(blank=True, verbose_name='URL del RSS')
     api_endpoint = models.URLField(blank=True, verbose_name='Endpoint API')
-    
+
     # Crawler configuration
     crawler_url = models.URLField(
         blank=True,
@@ -304,6 +312,30 @@ class NewsSource(models.Model):
         blank=True,
         verbose_name='Secciones detectadas',
         help_text='Secciones del sitio web descubiertas para crawling'
+    )
+
+    # Crawlability status and retry management
+    crawl_status = models.CharField(
+        max_length=20,
+        choices=CRAWL_STATUS_CHOICES,
+        default='unknown',
+        verbose_name='Estado de rastreo',
+        help_text='Indica si el sitio puede ser rastreado y cómo'
+    )
+    last_crawl_attempt = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Último intento de rastreo'
+    )
+    crawl_retry_after = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Reintentar después de',
+        help_text='Fecha/hora cuando se puede intentar rastrear nuevamente'
+    )
+    failed_crawl_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Conteo de fallos consecutivos'
     )
 
     # Legacy scraping configuration (keep for backwards compatibility)
@@ -332,9 +364,14 @@ class NewsSource(models.Model):
         verbose_name = 'Fuente de noticias'
         verbose_name_plural = 'Fuentes de noticias'
         ordering = ['country', 'name']
-        
+
     def __str__(self):
         return f"{self.name} ({self.get_country_display()})"
+
+    def save(self, *args, **kwargs):
+        if self.website_url and not self.crawler_url:
+            self.crawler_url = self.website_url
+        super().save(*args, **kwargs)
 
 class CrawlHistory(models.Model):
     """Track crawling history for news sources"""
@@ -485,10 +522,37 @@ class NewsArticle(models.Model):
             models.Index(fields=['business_relevance_score']),
             models.Index(fields=['is_processed']),
         ]
-        
+
     def __str__(self):
         return f"{self.title} - {self.source.name}"
-        
+
+    def save(self, *args, **kwargs):
+        """Prevent modification of crawler-generated fields after creation"""
+        # Fields that cannot be modified after creation (data integrity)
+        protected_fields = [
+            'source_id', 'title', 'content', 'url', 'author',
+            'published_date', 'section', 'crawl_section'
+        ]
+
+        # If this is an update (not a new object)
+        if self.pk:
+            try:
+                existing = NewsArticle.objects.get(pk=self.pk)
+
+                # Check if any protected field was modified
+                for field in protected_fields:
+                    old_value = getattr(existing, field)
+                    new_value = getattr(self, field)
+
+                    # Restore original value if it was changed
+                    if old_value != new_value:
+                        setattr(self, field, old_value)
+
+            except NewsArticle.DoesNotExist:
+                pass  # New object, allow all fields
+
+        super().save(*args, **kwargs)
+
     def get_keywords_list(self):
         """Return keywords as a list"""
         if isinstance(self.extracted_keywords, str):

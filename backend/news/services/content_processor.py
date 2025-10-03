@@ -33,7 +33,13 @@ class ContentProcessorService:
 
     def process_news_source(self, source: NewsSource, force_manual: bool = False) -> Dict[str, any]:
         """
-        Process a news source by discovering feeds or crawling manually
+        Process a news source following RSS-first priority strategy
+
+        Priority order:
+        1. Check retry blocking
+        2. Try RSS feeds (existing or discover)
+        3. Try manual crawling (fallback)
+        4. Detect why manual failed (SPA detection)
 
         Args:
             source: NewsSource instance to process
@@ -53,12 +59,23 @@ class ContentProcessorService:
             'articles_skipped': 0,
             'errors': [],
             'processing_duration': 0,
-            'crawl_history_id': None
+            'crawl_history_id': None,
+            'blocked': False
         }
 
         start_time = timezone.now()
 
         try:
+            # STEP 1: Check retry blocking
+            if source.crawl_retry_after and source.crawl_retry_after > timezone.now():
+                if source.crawl_status in ['uncrawlable', 'spa_detected']:
+                    result['blocked'] = True
+                    result['errors'].append(
+                        f"Site marked as '{source.get_crawl_status_display()}'. "
+                        f"Retry after {source.crawl_retry_after.strftime('%Y-%m-%d %H:%M')}"
+                    )
+                    return result
+
             with transaction.atomic():
                 # Create crawl history entry
                 crawl_history = CrawlHistory.objects.create(
@@ -68,43 +85,92 @@ class ContentProcessorService:
                 )
                 result['crawl_history_id'] = crawl_history.id
 
-                # Try RSS first (unless forced manual)
+                # Update last attempt time
+                source.last_crawl_attempt = timezone.now()
+
+                # STEP 2: Try RSS first (unless forced manual)
                 if not force_manual and (source.rss_url or source.discovered_rss_url):
                     rss_result = self._process_rss_feed(source)
-                    if rss_result['success']:
+                    if rss_result['success'] and rss_result['articles_saved'] > 0:
                         result.update(rss_result)
                         result['method_used'] = 'rss'
                         crawl_history.crawl_type = 'rss'
+
+                        # Mark as RSS available and reset failures
+                        source.crawl_status = 'rss_available'
+                        source.failed_crawl_count = 0
+                        source.crawl_retry_after = None
+                        source.last_fetched = timezone.now()
+                        source.save()
+
+                        # Success via RSS, stop here
+                        crawl_history.articles_found = result['articles_found']
+                        crawl_history.articles_saved = result['articles_saved']
+                        crawl_history.save()
+
+                        result['processing_duration'] = (timezone.now() - start_time).total_seconds()
+                        return result
                     else:
                         result['errors'].extend(rss_result['errors'])
 
-                # If RSS failed or forced manual, try manual crawling
-                if not result['success'] or force_manual:
-                    manual_result = self._process_manual_crawl(source)
-                    if manual_result['success']:
-                        if result['success']:  # Combine results if both methods worked
-                            result['articles_found'] += manual_result['articles_found']
-                            result['articles_saved'] += manual_result['articles_saved']
-                            result['articles_updated'] += manual_result['articles_updated']
-                            result['articles_skipped'] += manual_result['articles_skipped']
-                            result['method_used'] = 'rss+manual'
-                        else:
-                            result.update(manual_result)
-                            result['method_used'] = 'manual'
+                # STEP 3: Try RSS discovery if no RSS configured
+                if not force_manual and not source.rss_url and not source.discovered_rss_url:
+                    discovery_result = self.rss_service.discover_rss_feeds(source.crawler_url)
+                    if discovery_result['success'] and discovery_result['feeds']:
+                        source.rss_discovered = True
+                        source.discovered_rss_url = discovery_result['primary_feed']['url']
+                        source.save()
+
+                        # Try the discovered RSS
+                        rss_result = self._process_rss_feed(source)
+                        if rss_result['success'] and rss_result['articles_saved'] > 0:
+                            result.update(rss_result)
+                            result['method_used'] = 'rss_discovered'
+                            crawl_history.crawl_type = 'rss'
+
+                            source.crawl_status = 'rss_available'
+                            source.failed_crawl_count = 0
+                            source.crawl_retry_after = None
+                            source.last_fetched = timezone.now()
+                            source.save()
+
+                            crawl_history.articles_found = result['articles_found']
+                            crawl_history.articles_saved = result['articles_saved']
+                            crawl_history.save()
+
+                            result['processing_duration'] = (timezone.now() - start_time).total_seconds()
+                            return result
+
+                # STEP 4: Try manual crawling (fallback only)
+                manual_result = self._process_manual_crawl(source)
+                if manual_result['success']:
+                    if manual_result['articles_found'] > 0:
+                        # Manual crawling succeeded with articles
+                        result.update(manual_result)
+                        result['method_used'] = 'manual'
                         crawl_history.crawl_type = 'manual'
+
+                        source.crawl_status = 'manual_crawlable'
+                        source.failed_crawl_count = 0
+                        source.crawl_retry_after = None
+                        source.last_fetched = timezone.now()
+                        source.save()
                     else:
+                        # STEP 5: Manual returned 0 articles - detect why
                         result['errors'].extend(manual_result['errors'])
+                        self._handle_zero_articles_result(source, result)
+                else:
+                    result['errors'].extend(manual_result['errors'])
+                    self._handle_zero_articles_result(source, result)
 
                 # Update crawl history
                 crawl_history.articles_found = result['articles_found']
                 crawl_history.articles_saved = result['articles_saved']
                 crawl_history.status = 'success' if result['success'] else 'failed'
                 crawl_history.error_message = '; '.join(result['errors']) if result['errors'] else ''
+                crawl_history.save()
 
-                # Update source last_fetched timestamp
-                if result['success']:
-                    source.last_fetched = timezone.now()
-                    source.save()
+                source.save()
 
         except Exception as e:
             error_msg = f"Source processing failed: {str(e)}"
@@ -126,6 +192,48 @@ class ContentProcessorService:
 
         return result
 
+    def _handle_zero_articles_result(self, source: NewsSource, result: Dict) -> None:
+        """
+        Handle the case when manual crawling returns 0 articles
+        Detects SPAs and marks sites as uncrawlable after repeated failures
+        """
+        # Run SPA detection
+        spa_detection = self.manual_crawler.detect_spa_framework(source.crawler_url)
+
+        if spa_detection['is_spa']:
+            # SPA detected
+            source.crawl_status = 'spa_detected'
+            source.crawl_retry_after = timezone.now() + timezone.timedelta(hours=24)
+            source.failed_crawl_count = 0  # Not a "failure", it's a known limitation
+
+            framework_info = f" ({spa_detection['framework']})" if spa_detection['framework'] else ""
+            result['errors'].append(
+                f"JavaScript SPA detected{framework_info}. "
+                f"Site needs Selenium/headless browser or RSS feed. "
+                f"Retry after {source.crawl_retry_after.strftime('%Y-%m-%d %H:%M')}"
+            )
+            logger.warning(f"SPA detected for {source.name}: {spa_detection}")
+        else:
+            # No SPA detected, increment failure count
+            source.failed_crawl_count += 1
+
+            if source.failed_crawl_count >= 3:
+                # Mark as uncrawlable after 3 consecutive failures
+                source.crawl_status = 'uncrawlable'
+                source.crawl_retry_after = timezone.now() + timezone.timedelta(hours=24)
+
+                result['errors'].append(
+                    f"Site repeatedly returns 0 articles ({source.failed_crawl_count} times). "
+                    f"Marked as uncrawlable. "
+                    f"Retry after {source.crawl_retry_after.strftime('%Y-%m-%d %H:%M')}"
+                )
+                logger.error(f"Site marked uncrawlable: {source.name} after {source.failed_crawl_count} failures")
+            else:
+                result['errors'].append(
+                    f"No articles found (attempt {source.failed_crawl_count}/3). "
+                    f"Will retry on next crawl."
+                )
+
     def _process_rss_feed(self, source: NewsSource) -> Dict[str, any]:
         """Process articles from RSS feed"""
         result = {
@@ -144,6 +252,8 @@ class ContentProcessorService:
                 result['errors'].append("No RSS URL available")
                 return result
 
+            logger.info(f"Processing RSS feed: {feed_url}")
+
             # Fetch and parse RSS feed
             response = self.rss_service.session.get(feed_url, timeout=15)
             response.raise_for_status()
@@ -155,25 +265,39 @@ class ContentProcessorService:
                 return result
 
             result['articles_found'] = len(feed.entries)
+            logger.info(f"Found {len(feed.entries)} entries in RSS feed")
 
             # Process each entry
+            processed_count = 0
             for entry in feed.entries:
                 try:
+                    logger.debug(f"Processing entry: {entry.get('title', 'No title')[:50]}")
                     article_data = self._standardize_rss_entry(entry, source)
+
                     if article_data:
                         save_result = self._save_article(article_data, source)
                         if save_result == 'created':
                             result['articles_saved'] += 1
+                            logger.info(f"Created new article: {article_data['title'][:50]}")
                         elif save_result == 'updated':
                             result['articles_updated'] += 1
+                            logger.info(f"Updated article: {article_data['title'][:50]}")
+                        elif save_result == 'error':
+                            result['errors'].append(f"Failed to save article: {article_data['title'][:50]}")
                         else:
                             result['articles_skipped'] += 1
+                            logger.debug(f"Skipped article: {article_data['title'][:50]}")
+                    else:
+                        logger.warning(f"Failed to standardize entry: {entry.get('title', 'No title')[:50]}")
+
+                    processed_count += 1
 
                 except Exception as e:
                     error_msg = f"RSS entry processing failed: {str(e)}"
                     logger.warning(error_msg)
                     result['errors'].append(error_msg)
 
+            logger.info(f"RSS processing completed: {result['articles_saved']} saved, {result['articles_skipped']} skipped")
             result['success'] = True
 
         except Exception as e:
@@ -264,7 +388,7 @@ class ContentProcessorService:
             link = entry.get('link', '').strip()
             content = self._extract_content_from_rss(entry)
 
-            if not title or not link or not content or len(content) < 100:
+            if not title or not link or not content or len(content) < 50:
                 return None
 
             # Extract metadata
@@ -279,8 +403,7 @@ class ContentProcessorService:
                 'author': author,
                 'published_date': published_date,
                 'section': section,
-                'crawl_section': '',
-                'source_type': 'rss'
+                'crawl_section': ''
             }
 
         except Exception as e:
@@ -294,7 +417,7 @@ class ContentProcessorService:
             if not all(key in article_data for key in ['title', 'content', 'url']):
                 return None
 
-            if len(article_data['content']) < 100:
+            if len(article_data['content']) < 50:
                 return None
 
             return {
@@ -304,8 +427,7 @@ class ContentProcessorService:
                 'author': article_data.get('author', '').strip(),
                 'published_date': article_data.get('published_date') or timezone.now(),
                 'section': article_data.get('section', '').strip(),
-                'crawl_section': article_data.get('crawl_section', '').strip(),
-                'source_type': 'manual'
+                'crawl_section': article_data.get('crawl_section', '').strip()
             }
 
         except Exception as e:
@@ -314,8 +436,8 @@ class ContentProcessorService:
 
     def _extract_content_from_rss(self, entry: any) -> str:
         """Extract content from RSS entry"""
-        # Try different content fields
-        content_fields = ['content', 'summary', 'description']
+        # Try different content fields in order of preference
+        content_fields = ['content', 'summary', 'description', 'subtitle']
 
         for field in content_fields:
             if hasattr(entry, field):
@@ -330,12 +452,27 @@ class ContentProcessorService:
                     content = str(content_data)
 
                 if content:
-                    # Clean HTML tags
+                    # Clean HTML tags but preserve structure
                     soup = BeautifulSoup(content, 'html.parser')
-                    clean_content = soup.get_text().strip()
 
-                    if len(clean_content) > 100:
+                    # Remove script and style elements
+                    for script in soup(["script", "style"]):
+                        script.decompose()
+
+                    # Get text with better spacing
+                    clean_content = soup.get_text(separator=' ', strip=True)
+
+                    # Clean up multiple spaces
+                    clean_content = ' '.join(clean_content.split())
+
+                    if len(clean_content) > 50:
                         return clean_content
+
+        # Fallback to title if no content is found
+        if hasattr(entry, 'title'):
+            title = str(entry.title).strip()
+            if len(title) > 20:
+                return f"{title}. [Contenido completo disponible en el enlace original]"
 
         return ''
 
@@ -348,7 +485,7 @@ class ContentProcessorService:
                 date_tuple = getattr(entry, field + '_parsed')
                 if date_tuple:
                     try:
-                        return datetime(*date_tuple[:6]).replace(tzinfo=timezone.utc)
+                        return timezone.make_aware(datetime(*date_tuple[:6]))
                     except (ValueError, TypeError):
                         continue
 
