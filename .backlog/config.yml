@@ -1,0 +1,19 @@
+{
+  "projectName": "NaviGate",
+  "autoCommit": false,
+  "bypassGitHooks": false,
+  "checkActiveBranches": false,
+  "activeBranchDays": 7,
+  "enableRemoteOperations": true,
+  "defaultAssignee": "@victor",
+  "statuses": [
+    "Backlog",
+    "To Do",
+    "In Progress",
+    "Review",
+    "Done"
+  ],
+  "dateFormat": "YYYY-MM-DD HH:mm",
+  "browserPort": 3000,
+  "browserAutoOpen": true
+}

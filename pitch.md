@@ -2,16 +2,16 @@
 
 ## 🎯 EL PITCH (Versión Corta - 30 segundos)
 
-**"Imagínate tener un asistente inteligente que lee TODAS las noticias locales por ti y te dice exactamente qué hacer para aprovechar cada oportunidad de negocio."**
+**"¿Sabes cuántas veces se llena el restaurante de la esquina y el tuyo está vacío porque ellos se enteraron de un evento cerca y tú no?"**
 
-**Eso es NaviGate.**
+**NaviGate es tu solución.**
 
-Todos los días escanea cientos de noticias, eventos y redes sociales de tu ciudad, y te envía recomendaciones accionables como:
-- "Hay un concierto de Shakira este fin de semana → Aumenta tu inventario de bebidas"
-- "Maratón de Medellín el domingo → Prepara promociones matutinas para deportistas"
-- "Festival gastronómico en Bogotá → Refuerza tu staff operacional y promociona tus platos estrella"
+Lee todas las noticias, eventos y redes sociales de tu ciudad 24/7 y te avisa:
+- **Para tu pub:** "Partido Colombia vs Brasil el viernes → Alista más cerveza y pide ayuda extra"
+- **Para tu café:** "Graduaciones en la universidad esta semana → Prepara paquetes familiares y extiende horario"
+- **Para tu restaurante:** "Festival en el parque este fin de semana → Monta stand con tus platos estrella"
 
-**Es como tener un analista de negocios trabajando 24/7, pero a una fracción del costo.**
+**Como tener un socio que solo se dedica a buscar oportunidades para tu negocio.**
 
 ---
 
