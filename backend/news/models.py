@@ -430,6 +430,7 @@ class CrawlHistory(models.Model):
 
 class NewsArticle(models.Model):
     """Individual news articles from various sources"""
+    # Legacy event types (kept for backwards compatibility)
     EVENT_TYPES = [
         ('sports', 'Deportes'),
         ('cultural', 'Cultural'),
@@ -443,6 +444,74 @@ class NewsArticle(models.Model):
         ('weather', 'Clima'),
         ('government', 'Gobierno'),
         ('other', 'Otro'),
+    ]
+
+    # Public categories (displayed to users)
+    CATEGORY_CHOICES = [
+        ('eventos', 'Eventos'),
+        ('gastronomia', 'Gastronomía'),
+        ('infraestructura', 'Infraestructura'),
+        ('clima-alertas', 'Clima y Alertas'),
+        ('turismo', 'Turismo'),
+        ('economia', 'Economía'),
+        ('regulaciones', 'Regulaciones'),
+        ('educacion', 'Educación'),
+        ('comunidad', 'Comunidad'),
+        ('seguridad', 'Seguridad'),
+    ]
+
+    # Private subcategories (for ML classification)
+    SUBCATEGORY_CHOICES = [
+        # Eventos
+        ('conciertos', 'Conciertos'),
+        ('festivales', 'Festivales'),
+        ('deportes', 'Deportes'),
+        ('teatro-cultura', 'Teatro y Cultura'),
+        ('ferias', 'Ferias'),
+        # Gastronomía
+        ('tendencias-gastronomicas', 'Tendencias Gastronómicas'),
+        ('bebidas', 'Bebidas'),
+        ('competencias-culinarias', 'Competencias Culinarias'),
+        ('apertura-cierre', 'Apertura/Cierre'),
+        ('productos-nuevos', 'Productos Nuevos'),
+        # Infraestructura
+        ('obras-viales', 'Obras Viales'),
+        ('transporte-publico', 'Transporte Público'),
+        ('desarrollo-urbano', 'Desarrollo Urbano'),
+        ('servicios-publicos', 'Servicios Públicos'),
+        # Clima y Alertas
+        ('clima-extremo', 'Clima Extremo'),
+        ('alertas-emergencia', 'Alertas de Emergencia'),
+        ('desastres-naturales', 'Desastres Naturales'),
+        # Turismo
+        ('estadisticas-turismo', 'Estadísticas de Turismo'),
+        ('feriados-puentes', 'Feriados y Puentes'),
+        ('temporada-alta-baja', 'Temporada Alta/Baja'),
+        ('turismo-internacional', 'Turismo Internacional'),
+        # Economía
+        ('tendencias-consumo', 'Tendencias de Consumo'),
+        ('inflacion-precios', 'Inflación y Precios'),
+        ('empleo', 'Empleo'),
+        ('poder-adquisitivo', 'Poder Adquisitivo'),
+        # Regulaciones
+        ('leyes-nuevas', 'Leyes Nuevas'),
+        ('permisos-licencias', 'Permisos y Licencias'),
+        ('salud-publica', 'Salud Pública'),
+        ('impuestos', 'Impuestos'),
+        ('horarios-restricciones', 'Horarios y Restricciones'),
+        # Educación
+        ('universidades', 'Universidades'),
+        ('colegios', 'Colegios'),
+        ('inicio-fin-semestre', 'Inicio/Fin de Semestre'),
+        # Comunidad
+        ('eventos-barriales', 'Eventos Barriales'),
+        ('mercados-ferias', 'Mercados y Ferias'),
+        ('tendencias-sociales', 'Tendencias Sociales'),
+        ('celebraciones-locales', 'Celebraciones Locales'),
+        # Seguridad
+        ('seguridad-publica', 'Seguridad Pública'),
+        ('zonas-riesgo', 'Zonas de Riesgo'),
+        ('operativos-policiales', 'Operativos Policiales'),
     ]
     
     source = models.ForeignKey(
@@ -471,8 +540,27 @@ class NewsArticle(models.Model):
         choices=EVENT_TYPES,
         null=True,
         blank=True,
-        verbose_name='Tipo de evento detectado'
+        verbose_name='Tipo de evento detectado (legacy)'
     )
+
+    # New category system
+    category = models.CharField(
+        max_length=30,
+        choices=CATEGORY_CHOICES,
+        null=True,
+        blank=True,
+        verbose_name='Categoría pública',
+        help_text='Categoría principal visible para el usuario'
+    )
+    subcategory = models.CharField(
+        max_length=50,
+        choices=SUBCATEGORY_CHOICES,
+        null=True,
+        blank=True,
+        verbose_name='Subcategoría privada',
+        help_text='Subcategoría detallada para clasificación ML'
+    )
+
     event_date = models.DateTimeField(
         null=True,
         blank=True,
