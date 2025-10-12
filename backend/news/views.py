@@ -49,34 +49,65 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = NewsArticle.objects.select_related('source')
-        
+
         # Filter parameters
         city = self.request.query_params.get('city')
-        event_type = self.request.query_params.get('event_type')
+        primary_city = self.request.query_params.get('primary_city')  # ML extracted city
+        event_type = self.request.query_params.get('event_type')  # Legacy field
+        event_type_detected = self.request.query_params.get('event_type_detected')  # ML field
         is_processed = self.request.query_params.get('is_processed')
         days_ago = self.request.query_params.get('days_ago')
-        min_relevance = self.request.query_params.get('min_relevance')
-        
+        min_relevance = self.request.query_params.get('min_relevance')  # Legacy field
+        business_suitability_score__gte = self.request.query_params.get('business_suitability_score__gte')  # ML field
+        features_extracted = self.request.query_params.get('features_extracted')
+        event_scale = self.request.query_params.get('event_scale')
+
+        # City filtering (legacy - source city or event location)
         if city:
             queryset = queryset.filter(
                 Q(source__city=city) | Q(event_location__icontains=city)
             )
+
+        # ML-extracted city filtering (Phase 3 - task-4)
+        if primary_city:
+            queryset = queryset.filter(primary_city=primary_city)
+
+        # Event type filtering
         if event_type:
             queryset = queryset.filter(event_type=event_type)
+        if event_type_detected:
+            queryset = queryset.filter(event_type_detected=event_type_detected)
+
+        # ML features
+        if features_extracted is not None:
+            queryset = queryset.filter(features_extracted=features_extracted.lower() == 'true')
+        if event_scale:
+            queryset = queryset.filter(event_scale=event_scale)
+
+        # Processing status
         if is_processed is not None:
             queryset = queryset.filter(is_processed=is_processed.lower() == 'true')
+
+        # Date filtering
         if days_ago:
             try:
                 date_threshold = timezone.now() - timedelta(days=int(days_ago))
                 queryset = queryset.filter(published_date__gte=date_threshold)
             except ValueError:
                 pass
+
+        # Relevance/suitability scores
         if min_relevance:
             try:
                 queryset = queryset.filter(business_relevance_score__gte=float(min_relevance))
             except ValueError:
                 pass
-                
+        if business_suitability_score__gte:
+            try:
+                queryset = queryset.filter(business_suitability_score__gte=float(business_suitability_score__gte))
+            except ValueError:
+                pass
+
         return queryset.order_by('-published_date')
     
     @action(detail=False, methods=['get'])
