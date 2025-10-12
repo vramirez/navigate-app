@@ -1,12 +1,13 @@
 from rest_framework import viewsets, generics, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 from .models import NewsSource, NewsArticle, SocialMediaPost, ManualNewsEntry
 from .serializers import (
-    NewsSourceSerializer, NewsArticleSerializer, 
+    NewsSourceSerializer, NewsArticleSerializer,
     SocialMediaPostSerializer, ManualNewsEntrySerializer
 )
 
@@ -14,9 +15,11 @@ from .serializers import (
 class NewsSourceViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing news sources
+    TODO Phase 4: Restore authentication requirement
     """
     queryset = NewsSource.objects.all()
     serializer_class = NewsSourceSerializer
+    permission_classes = [AllowAny]  # Temporary for MVP - allows frontend testing
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'city']
     
@@ -36,9 +39,11 @@ class NewsSourceViewSet(viewsets.ModelViewSet):
 class NewsArticleViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing news articles
+    TODO Phase 4: Restore authentication requirement
     """
     queryset = NewsArticle.objects.all()
     serializer_class = NewsArticleSerializer
+    permission_classes = [AllowAny]  # Temporary for MVP - allows frontend testing
     filter_backends = [filters.SearchFilter]
     search_fields = ['title', 'content', 'extracted_keywords']
     
