@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
+import { useQuery } from 'react-query'
 import { useTranslation } from 'react-i18next'
 import {
   HandThumbUpIcon,
@@ -14,92 +15,106 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/solid'
 import { getCategoryBadgeClasses, getCategoryIcon } from '../utils/categoryUtils'
+import { getDashboardArticles } from '../services/newsApi'
+import { getRecommendationsByArticle } from '../services/recommendationsApi'
+import { joinArticlesWithRecommendations, sortByRelevance } from '../utils/dataTransformers'
 
 export default function Dashboard() {
   const { t } = useTranslation()
-  
+
   // State for tracking user interactions
   const [newsLikes, setNewsLikes] = useState({})
   const [recommendations, setRecommendations] = useState({})
 
-  // Mock data for news with embedded recommendations
-  const newsWithRecommendations = [
+  // Fetch articles from API
+  const { data: articlesData, isLoading: articlesLoading, error: articlesError } = useQuery(
+    'dashboardArticles',
+    getDashboardArticles,
     {
-      id: 1,
-      title: 'Medellín se prepara para el Maratón Internacional 2025 con más de 15,000 participantes',
-      source: 'El Tiempo',
-      publishedAt: 'Hace 3 horas',
-      category: 'eventos',
-      subcategory: 'deportes',
-      content: 'La capital antioqueña se alista para recibir el próximo 15 de octubre el Maratón Internacional de Medellín 2025, uno de los eventos deportivos más importantes del país. Se esperan más de 15,000 corredores nacionales e internacionales. El evento incluirá tres modalidades: maratón completo (42K), media maratón (21K) y carrera recreativa (10K)...',
-      recommendations: [
-        {
-          id: 'rec1',
-          title: 'Aumentar inventario de bebidas isotónicas en 200%',
-          priority: 'high',
-          description: 'El evento deportivo generará alta demanda de bebidas isotónicas y agua. Recomendamos incrementar significativamente el stock.',
-          estimatedHours: 4
-        },
-        {
-          id: 'rec2',
-          title: 'Preparar menú especial para corredores (desayunos 5:00-7:00 AM)',
-          priority: 'medium',
-          description: 'Ofrecer opciones saludables y energéticas antes del evento. Considerar abrir más temprano.',
-          estimatedHours: 8
-        }
-      ]
-    },
-    {
-      id: 2,
-      title: 'Colombia clasifica a la final de la Copa América: el partido decisivo contra Brasil',
-      source: 'El Espectador',
-      publishedAt: 'Hace 5 horas',
-      category: 'eventos',
-      subcategory: 'deportes',
-      content: 'La Selección Colombia logró clasificar a la final de la Copa América 2025 y enfrentará a Brasil el próximo 10 de diciembre en el Estadio Metropolitano de Barranquilla. Las autoridades esperan que más de 50,000 hinchas llenen el estadio, mientras que millones de colombianos seguirán el partido desde bares y restaurantes...',
-      recommendations: [
-        {
-          id: 'rec3',
-          title: 'Crear promoción especial "Final Copa América" - 2x1 en cervezas nacionales',
-          priority: 'urgent',
-          description: '¡Oportunidad histórica! Preparar campaña especial con decoración temática y promociones en cervezas.',
-          estimatedHours: 12
-        },
-        {
-          id: 'rec4',
-          title: 'Aumentar stock de cerveza en 400% para el día del partido',
-          priority: 'high',
-          description: 'Evento de altísima demanda. Contactar proveedores inmediatamente para asegurar stock suficiente.',
-          estimatedHours: 6
-        },
-        {
-          id: 'rec5',
-          title: 'Contratar 2 meseros adicionales para el evento',
-          priority: 'medium',
-          description: 'El volumen de clientes será excepcional. Personal adicional garantizará mejor servicio.',
-          estimatedHours: 3
-        }
-      ]
-    },
-    {
-      id: 3,
-      title: 'Festival Gastronómico Internacional llega a Bogotá con 200 restaurantes',
-      source: 'Caracol Radio',
-      publishedAt: 'Hace 1 día',
-      category: 'gastronomia',
-      subcategory: 'festivales',
-      content: 'Del 20 al 25 de noviembre, la Zona Rosa de Bogotá será el epicentro del Festival Gastronómico Internacional. El festival incluirá cenas especiales, talleres de cocina, degustaciones y competencias entre chefs. Se esperan más de 50,000 visitantes...',
-      recommendations: [
-        {
-          id: 'rec6',
-          title: 'Considerar participación como expositor en el festival',
-          priority: 'low',
-          description: 'Oportunidad de visibilidad y networking con otros restaurantes. Evaluar costos vs beneficios.',
-          estimatedHours: 20
-        }
-      ]
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
     }
-  ]
+  )
+
+  // Fetch recommendations from API
+  const { data: recommendationsData, isLoading: recommendationsLoading } = useQuery(
+    'articleRecommendations',
+    () => getRecommendationsByArticle(1), // TODO: Get actual business ID from auth context
+    {
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 10 * 60 * 1000,
+    }
+  )
+
+  // Join articles with their recommendations
+  const newsWithRecommendations = useMemo(() => {
+    if (!articlesData || !recommendationsData) return []
+
+    const joined = joinArticlesWithRecommendations(articlesData, recommendationsData)
+    return sortByRelevance(joined)
+  }, [articlesData, recommendationsData])
+
+  // Loading state
+  if (articlesLoading || recommendationsLoading) {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-3" style={{color: '#c01b1bff', opacity: 0.55}}>
+            {t('dashboard.welcome')}
+          </h1>
+          <p className="text-lg" style={{color: '#f3e9e9ff', opacity: 0.55}}>
+            Noticias relevantes y recomendaciones para tu negocio
+          </p>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="news-card animate-pulse">
+              <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (articlesError) {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-3" style={{color: '#c01b1bff', opacity: 0.55}}>
+            {t('dashboard.welcome')}
+          </h1>
+        </div>
+        <div className="card bg-red-50 border-red-200">
+          <p className="text-red-600 text-center py-8">
+            Error al cargar las noticias. Por favor, intenta de nuevo más tarde.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty state
+  if (!newsWithRecommendations || newsWithRecommendations.length === 0) {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-3" style={{color: '#c01b1bff', opacity: 0.55}}>
+            {t('dashboard.welcome')}
+          </h1>
+        </div>
+        <div className="card">
+          <p className="text-gray-500 text-center py-8">
+            No hay noticias disponibles en este momento.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   const handleNewsLike = (newsId, isLike) => {
     setNewsLikes(prev => ({
