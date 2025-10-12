@@ -30,8 +30,46 @@ class Business(models.Model):
         verbose_name='Ciudad'
     )
     address = models.TextField(blank=True, verbose_name='Dirección')
+
+    # Geographic data for ML matching (task-4)
+    neighborhood = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Barrio/Localidad',
+        help_text='Barrio específico (El Poblado, Laureles, Chapinero, etc.)'
+    )
+    latitude = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Latitud',
+        help_text='Coordenada geográfica para matching basado en distancia'
+    )
+    longitude = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Longitud',
+        help_text='Coordenada geográfica para matching basado en distancia'
+    )
+
+    # Geographic matching preferences
+    geographic_radius_km = models.FloatField(
+        default=5.0,
+        verbose_name='Radio geográfico (km)',
+        help_text='Mostrar noticias dentro de este radio (kilómetros)'
+    )
+    include_citywide_events = models.BooleanField(
+        default=True,
+        verbose_name='Incluir eventos a nivel ciudad',
+        help_text='Mostrar eventos grandes que afectan toda la ciudad'
+    )
+    include_national_events = models.BooleanField(
+        default=False,
+        verbose_name='Incluir eventos nacionales',
+        help_text='Mostrar eventos masivos de nivel nacional (Copa América, etc.)'
+    )
+
     description = models.TextField(
-        max_length=500, 
+        max_length=500,
         blank=True,
         verbose_name='Descripción del negocio'
     )

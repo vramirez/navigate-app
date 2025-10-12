@@ -10,11 +10,12 @@ class RecommendationSerializer(serializers.ModelSerializer):
         model = Recommendation
         fields = [
             'id', 'business', 'business_name', 'content_type', 'object_id',
-            'content_type_name', 'title', 'description', 'category', 
+            'content_type_name', 'title', 'description', 'category',
             'action_type', 'priority', 'confidence_score', 'impact_score',
             'effort_score', 'recommended_start_date', 'recommended_end_date',
             'estimated_duration_hours', 'reasoning', 'resources_needed',
-            'expected_outcomes', 'status', 'is_read', 'is_archived',
+            'expected_outcomes', 'is_viewed', 'is_accepted', 'is_implemented',
+            'user_feedback', 'user_rating', 'expires_at',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']

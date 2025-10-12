@@ -41,9 +41,16 @@ class RecommendationViewSet(viewsets.ModelViewSet):
         if priority:
             queryset = queryset.filter(priority=priority)
         if status:
-            queryset = queryset.filter(status=status)
+            # Map old status to new fields: pending -> not viewed, active -> viewed, completed -> implemented
+            if status == 'pending':
+                queryset = queryset.filter(is_viewed=False)
+            elif status == 'active':
+                queryset = queryset.filter(is_viewed=True, is_implemented=False)
+            elif status == 'completed':
+                queryset = queryset.filter(is_implemented=True)
         if is_archived is not None:
-            queryset = queryset.filter(is_archived=is_archived.lower() == 'true')
+            # Model doesn't have is_archived, filter by implemented instead
+            queryset = queryset.filter(is_implemented=is_archived.lower() == 'true')
         if min_confidence:
             try:
                 queryset = queryset.filter(confidence_score__gte=float(min_confidence))
@@ -57,8 +64,8 @@ class RecommendationViewSet(viewsets.ModelViewSet):
         """Get urgent recommendations"""
         recommendations = self.get_queryset().filter(
             priority='urgent',
-            status='pending',
-            is_archived=False
+            is_viewed=False,
+            is_implemented=False
         )
         serializer = self.get_serializer(recommendations, many=True)
         return Response(serializer.data)
@@ -68,7 +75,7 @@ class RecommendationViewSet(viewsets.ModelViewSet):
         """Get high impact recommendations"""
         recommendations = self.get_queryset().filter(
             impact_score__gte=0.8,
-            is_archived=False
+            is_implemented=False
         )
         serializer = self.get_serializer(recommendations, many=True)
         return Response(serializer.data)
@@ -82,7 +89,7 @@ class RecommendationViewSet(viewsets.ModelViewSet):
             
         recommendations = self.get_queryset().filter(
             business_id=business_id,
-            is_archived=False
+            is_implemented=False
         )
         serializer = self.get_serializer(recommendations, many=True)
         return Response(serializer.data)
@@ -105,19 +112,19 @@ class RecommendationViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
-        """Mark a recommendation as read"""
+        """Mark a recommendation as viewed"""
         recommendation = self.get_object()
-        recommendation.is_read = True
-        recommendation.save(update_fields=['is_read'])
-        return Response({'status': 'marked as read'})
-    
+        recommendation.is_viewed = True
+        recommendation.save(update_fields=['is_viewed'])
+        return Response({'status': 'marked as viewed'})
+
     @action(detail=True, methods=['post'])
-    def archive(self, request, pk=None):
-        """Archive a recommendation"""
+    def mark_implemented(self, request, pk=None):
+        """Mark a recommendation as implemented"""
         recommendation = self.get_object()
-        recommendation.is_archived = True
-        recommendation.save(update_fields=['is_archived'])
-        return Response({'status': 'archived'})
+        recommendation.is_implemented = True
+        recommendation.save(update_fields=['is_implemented'])
+        return Response({'status': 'marked as implemented'})
 
 
 class RecommendationFeedbackViewSet(viewsets.ModelViewSet):

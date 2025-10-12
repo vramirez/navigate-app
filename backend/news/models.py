@@ -595,7 +595,126 @@ class NewsArticle(models.Model):
     # Processing status
     is_processed = models.BooleanField(default=False, verbose_name='Procesado por ML')
     processing_error = models.TextField(blank=True, verbose_name='Error de procesamiento')
-    
+
+    # ML Feature Extraction fields (Phase 3 - task-4)
+    # Event type detection (detailed classification)
+    event_type_detected = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Tipo de evento detectado (ML)',
+        help_text='sports_match, concert, festival, marathon, conference, etc.'
+    )
+    event_subtype = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Subtipo de evento',
+        help_text='football match, rock concert, food festival, etc.'
+    )
+
+    # Geographic features
+    primary_city = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Ciudad principal',
+        help_text='Ciudad donde ocurre el evento o noticia'
+    )
+    neighborhood = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Barrio/Localidad',
+        help_text='Barrio específico (El Poblado, Laureles, etc.)'
+    )
+    venue_name = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name='Nombre del lugar',
+        help_text='Nombre del venue/estadio/teatro donde ocurre'
+    )
+    venue_address = models.CharField(
+        max_length=300,
+        blank=True,
+        verbose_name='Dirección del lugar'
+    )
+    latitude = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Latitud',
+        help_text='Coordenada geográfica'
+    )
+    longitude = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Longitud',
+        help_text='Coordenada geográfica'
+    )
+
+    # Temporal features
+    event_start_datetime = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Fecha/hora de inicio del evento',
+        help_text='Fecha y hora específica de inicio'
+    )
+    event_end_datetime = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Fecha/hora de fin del evento',
+        help_text='Fecha y hora específica de fin'
+    )
+    event_duration_hours = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Duración del evento (horas)'
+    )
+
+    # Scale features
+    expected_attendance = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Asistencia esperada',
+        help_text='Número estimado de asistentes'
+    )
+    event_scale = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=[
+            ('small', 'Pequeño (<500)'),
+            ('medium', 'Mediano (500-5000)'),
+            ('large', 'Grande (5000-50000)'),
+            ('massive', 'Masivo (>50000)'),
+        ],
+        verbose_name='Escala del evento'
+    )
+
+    # Pre-filtering scores
+    business_suitability_score = models.FloatField(
+        default=0.0,
+        verbose_name='Puntuación de idoneidad para negocios',
+        help_text='0.0-1.0: Qué tan relevante es para CUALQUIER negocio de hostelería'
+    )
+    urgency_score = models.FloatField(
+        default=0.0,
+        verbose_name='Puntuación de urgencia',
+        help_text='0.0-1.0: Qué tan urgente es actuar sobre esta noticia'
+    )
+
+    # Feature extraction metadata
+    features_extracted = models.BooleanField(
+        default=False,
+        verbose_name='Features extraídas',
+        help_text='Indica si las features ML ya fueron extraídas'
+    )
+    feature_extraction_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Fecha de extracción de features'
+    )
+    feature_extraction_confidence = models.FloatField(
+        default=0.0,
+        verbose_name='Confianza de extracción',
+        help_text='0.0-1.0: Nivel de confianza en las features extraídas'
+    )
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
