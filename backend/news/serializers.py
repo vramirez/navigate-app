@@ -52,11 +52,22 @@ class NewsArticleSerializer(serializers.ModelSerializer):
         model = NewsArticle
         fields = [
             'id', 'source', 'source_name', 'source_country', 'title', 'content', 'url',
-            'author', 'published_date', 'section', 'crawl_section', 'event_type', 'event_date',
-            'event_location', 'business_relevance_score', 'extracted_keywords',
-            'entities', 'sentiment_score', 'is_processed', 'processing_error', 'created_at', 'updated_at'
+            'author', 'published_date', 'section', 'crawl_section',
+            # Legacy fields (Phase 1)
+            'event_type', 'event_date', 'event_location', 'business_relevance_score',
+            # ML extracted fields (Phase 3 - task-4)
+            'event_type_detected', 'event_subtype', 'primary_city', 'neighborhood',
+            'venue_name', 'venue_address', 'latitude', 'longitude',
+            'event_start_datetime', 'event_end_datetime', 'event_duration_hours',
+            'expected_attendance', 'event_scale', 'business_suitability_score',
+            'urgency_score', 'features_extracted', 'feature_extraction_date',
+            'feature_extraction_confidence',
+            # Other fields
+            'extracted_keywords', 'entities', 'sentiment_score',
+            'is_processed', 'processing_error', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'features_extracted',
+                           'feature_extraction_date', 'feature_extraction_confidence']
 
 
 class SocialMediaPostSerializer(serializers.ModelSerializer):
