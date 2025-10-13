@@ -15,15 +15,15 @@ import { es } from 'date-fns/locale'
 const mapEventTypeToCategory = (eventType) => {
   const mapping = {
     'sports': 'eventos',
-    'cultural': 'cultura',
+    'cultural': 'eventos',
     'food': 'gastronomia',
-    'festival': 'gastronomia',
-    'entertainment': 'entretenimiento',
-    'business': 'negocios',
-    'politics': 'politica',
-    'weather': 'clima',
+    'festival': 'eventos',
+    'entertainment': 'eventos',
+    'business': 'economia',
+    'politics': 'comunidad',
+    'weather': 'clima-alertas',
   }
-  return mapping[eventType?.toLowerCase()] || 'general'
+  return mapping[eventType?.toLowerCase()] || 'comunidad'
 }
 
 /**
@@ -55,6 +55,7 @@ export const transformArticleToNews = (article) => {
     category: mapEventTypeToCategory(article.event_type),
     subcategory: article.event_type || 'general',
     content: article.content || '',
+    firstParagraph: article.first_paragraph || article.content || '',
     url: article.url,
     relevanceScore: article.business_relevance_score,
     keywords: article.extracted_keywords || [],
