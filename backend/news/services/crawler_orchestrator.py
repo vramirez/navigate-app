@@ -8,6 +8,7 @@ manual crawling, and content processing for news sources.
 import logging
 from typing import Dict, Optional, List
 from django.utils import timezone
+from django.db import transaction
 
 from ..models import NewsSource, CrawlHistory
 from .rss_discovery import RSSDiscoveryService
@@ -55,18 +56,20 @@ class CrawlerOrchestratorService:
                 rss_result = self.rss_service.discover_rss_feeds(source.crawler_url)
 
                 if rss_result['success'] and rss_result['feeds']:
-                    # Update source with discovered RSS
-                    source.rss_discovered = True
-                    source.discovered_rss_url = rss_result['primary_feed']['url']
-                    source.save()
+                    # Update source with discovered RSS using atomic transaction
+                    with transaction.atomic():
+                        source.rss_discovered = True
+                        source.discovered_rss_url = rss_result['primary_feed']['url']
+                        source.save()
 
                     result['rss_discovered'] = True
                     result['setup_actions'].append(f"RSS feed discovered: {source.discovered_rss_url}")
 
                     # Update website title if available
                     if rss_result['website_title'] and not source.name.strip():
-                        source.name = rss_result['website_title']
-                        source.save()
+                        with transaction.atomic():
+                            source.name = rss_result['website_title']
+                            source.save()
                         result['setup_actions'].append(f"Website title updated: {source.name}")
 
                 else:
@@ -79,11 +82,12 @@ class CrawlerOrchestratorService:
                 structure_result = self.manual_crawler.discover_site_structure(source.crawler_url)
 
                 if structure_result['success']:
-                    # Update source with discovered sections
+                    # Update source with discovered sections using atomic transaction
                     if structure_result['sections']:
-                        source.crawl_sections = structure_result['sections']
-                        source.manual_crawl_enabled = True
-                        source.save()
+                        with transaction.atomic():
+                            source.crawl_sections = structure_result['sections']
+                            source.manual_crawl_enabled = True
+                            source.save()
 
                         result['site_structure_analyzed'] = True
                         result['setup_actions'].append(f"Site structure analyzed: {len(structure_result['sections'])} sections found")
@@ -244,22 +248,23 @@ class CrawlerOrchestratorService:
         discovery_result = self.rss_service.discover_rss_feeds(source.crawler_url)
 
         if discovery_result['success'] and discovery_result['feeds']:
-            # Update source with discovered information
-            source.rss_discovered = True
-            source.discovered_rss_url = discovery_result['primary_feed']['url']
+            # Update source with discovered information using atomic transaction
+            with transaction.atomic():
+                source.rss_discovered = True
+                source.discovered_rss_url = discovery_result['primary_feed']['url']
 
-            if discovery_result['website_title']:
-                source.name = discovery_result['website_title']
+                if discovery_result['website_title']:
+                    source.name = discovery_result['website_title']
 
-            if discovery_result['discovered_sections']:
-                # Convert to format expected by crawl_sections field
-                sections = [
-                    {'title': section, 'url': '', 'type': 'discovered'}
-                    for section in discovery_result['discovered_sections']
-                ]
-                source.crawl_sections = sections
+                if discovery_result['discovered_sections']:
+                    # Convert to format expected by crawl_sections field
+                    sections = [
+                        {'title': section, 'url': '', 'type': 'discovered'}
+                        for section in discovery_result['discovered_sections']
+                    ]
+                    source.crawl_sections = sections
 
-            source.save()
+                source.save()
 
             discovery_result['source_updated'] = True
             discovery_result['source_name'] = source.name
@@ -296,10 +301,11 @@ class CrawlerOrchestratorService:
         structure_result = self.manual_crawler.discover_site_structure(source.crawler_url)
 
         if structure_result['success']:
-            # Update source with discovered structure
-            source.crawl_sections = structure_result['sections']
-            source.manual_crawl_enabled = True
-            source.save()
+            # Update source with discovered structure using atomic transaction
+            with transaction.atomic():
+                source.crawl_sections = structure_result['sections']
+                source.manual_crawl_enabled = True
+                source.save()
 
             structure_result['source_updated'] = True
             structure_result['source_name'] = source.name
@@ -422,11 +428,12 @@ class CrawlerOrchestratorService:
 
         old_status = source.get_crawl_status_display()
 
-        # Reset status fields
-        source.crawl_status = 'unknown'
-        source.crawl_retry_after = None
-        source.failed_crawl_count = 0
-        source.save()
+        # Reset status fields using atomic transaction
+        with transaction.atomic():
+            source.crawl_status = 'unknown'
+            source.crawl_retry_after = None
+            source.failed_crawl_count = 0
+            source.save()
 
         logger.info(f"Reset crawl status for {source.name} (was: {old_status})")
 

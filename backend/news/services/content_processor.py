@@ -96,17 +96,18 @@ class ContentProcessorService:
                         result['method_used'] = 'rss'
                         crawl_history.crawl_type = 'rss'
 
-                        # Mark as RSS available and reset failures
-                        source.crawl_status = 'rss_available'
-                        source.failed_crawl_count = 0
-                        source.crawl_retry_after = None
-                        source.last_fetched = timezone.now()
-                        source.save()
+                        # Mark as RSS available and reset failures using atomic transaction
+                        with transaction.atomic():
+                            source.crawl_status = 'rss_available'
+                            source.failed_crawl_count = 0
+                            source.crawl_retry_after = None
+                            source.last_fetched = timezone.now()
+                            source.save()
 
-                        # Success via RSS, stop here
-                        crawl_history.articles_found = result['articles_found']
-                        crawl_history.articles_saved = result['articles_saved']
-                        crawl_history.save()
+                            # Success via RSS, stop here
+                            crawl_history.articles_found = result['articles_found']
+                            crawl_history.articles_saved = result['articles_saved']
+                            crawl_history.save()
 
                         result['processing_duration'] = (timezone.now() - start_time).total_seconds()
                         return result
@@ -117,9 +118,10 @@ class ContentProcessorService:
                 if not force_manual and not source.rss_url and not source.discovered_rss_url:
                     discovery_result = self.rss_service.discover_rss_feeds(source.crawler_url)
                     if discovery_result['success'] and discovery_result['feeds']:
-                        source.rss_discovered = True
-                        source.discovered_rss_url = discovery_result['primary_feed']['url']
-                        source.save()
+                        with transaction.atomic():
+                            source.rss_discovered = True
+                            source.discovered_rss_url = discovery_result['primary_feed']['url']
+                            source.save()
 
                         # Try the discovered RSS
                         rss_result = self._process_rss_feed(source)
@@ -128,15 +130,16 @@ class ContentProcessorService:
                             result['method_used'] = 'rss_discovered'
                             crawl_history.crawl_type = 'rss'
 
-                            source.crawl_status = 'rss_available'
-                            source.failed_crawl_count = 0
-                            source.crawl_retry_after = None
-                            source.last_fetched = timezone.now()
-                            source.save()
+                            with transaction.atomic():
+                                source.crawl_status = 'rss_available'
+                                source.failed_crawl_count = 0
+                                source.crawl_retry_after = None
+                                source.last_fetched = timezone.now()
+                                source.save()
 
-                            crawl_history.articles_found = result['articles_found']
-                            crawl_history.articles_saved = result['articles_saved']
-                            crawl_history.save()
+                                crawl_history.articles_found = result['articles_found']
+                                crawl_history.articles_saved = result['articles_saved']
+                                crawl_history.save()
 
                             result['processing_duration'] = (timezone.now() - start_time).total_seconds()
                             return result
@@ -150,11 +153,12 @@ class ContentProcessorService:
                         result['method_used'] = 'manual'
                         crawl_history.crawl_type = 'manual'
 
-                        source.crawl_status = 'manual_crawlable'
-                        source.failed_crawl_count = 0
-                        source.crawl_retry_after = None
-                        source.last_fetched = timezone.now()
-                        source.save()
+                        with transaction.atomic():
+                            source.crawl_status = 'manual_crawlable'
+                            source.failed_crawl_count = 0
+                            source.crawl_retry_after = None
+                            source.last_fetched = timezone.now()
+                            source.save()
                     else:
                         # STEP 5: Manual returned 0 articles - detect why
                         result['errors'].extend(manual_result['errors'])
@@ -163,27 +167,29 @@ class ContentProcessorService:
                     result['errors'].extend(manual_result['errors'])
                     self._handle_zero_articles_result(source, result)
 
-                # Update crawl history
-                crawl_history.articles_found = result['articles_found']
-                crawl_history.articles_saved = result['articles_saved']
-                crawl_history.status = 'success' if result['success'] else 'failed'
-                crawl_history.error_message = '; '.join(result['errors']) if result['errors'] else ''
-                crawl_history.save()
+                # Update crawl history using atomic transaction
+                with transaction.atomic():
+                    crawl_history.articles_found = result['articles_found']
+                    crawl_history.articles_saved = result['articles_saved']
+                    crawl_history.status = 'success' if result['success'] else 'failed'
+                    crawl_history.error_message = '; '.join(result['errors']) if result['errors'] else ''
+                    crawl_history.save()
 
-                source.save()
+                    source.save()
 
         except Exception as e:
             error_msg = f"Source processing failed: {str(e)}"
             logger.error(error_msg)
             result['errors'].append(error_msg)
 
-            # Update crawl history on error
+            # Update crawl history on error using atomic transaction
             if result['crawl_history_id']:
                 try:
-                    crawl_history = CrawlHistory.objects.get(id=result['crawl_history_id'])
-                    crawl_history.status = 'failed'
-                    crawl_history.error_message = error_msg
-                    crawl_history.save()
+                    with transaction.atomic():
+                        crawl_history = CrawlHistory.objects.get(id=result['crawl_history_id'])
+                        crawl_history.status = 'failed'
+                        crawl_history.error_message = error_msg
+                        crawl_history.save()
                 except CrawlHistory.DoesNotExist:
                     pass
 
@@ -334,9 +340,10 @@ class ContentProcessorService:
                 if structure['success']:
                     sections_to_crawl = [s['url'] for s in structure['sections'][:3]]  # Limit to 3 sections
 
-                    # Update source with discovered sections
-                    source.crawl_sections = structure['sections']
-                    source.save()
+                    # Update source with discovered sections using atomic transaction
+                    with transaction.atomic():
+                        source.crawl_sections = structure['sections']
+                        source.save()
                 else:
                     # Fallback to main page
                     sections_to_crawl = [source.crawler_url]
@@ -525,23 +532,25 @@ class ContentProcessorService:
             if existing_article:
                 # Check if content has changed significantly
                 if self._has_content_changed(existing_article, article_data):
-                    # Update existing article
-                    for field, value in article_data.items():
-                        if field != 'url':  # Don't update URL
-                            setattr(existing_article, field, value)
+                    # Update existing article using atomic transaction
+                    with transaction.atomic():
+                        for field, value in article_data.items():
+                            if field != 'url':  # Don't update URL
+                                setattr(existing_article, field, value)
 
-                    existing_article.updated_at = timezone.now()
-                    existing_article.save()
+                        existing_article.updated_at = timezone.now()
+                        existing_article.save()
                     return 'updated'
                 else:
                     return 'skipped'
 
             else:
-                # Create new article
-                article = NewsArticle.objects.create(
-                    source=source,
-                    **article_data
-                )
+                # Create new article using atomic transaction
+                with transaction.atomic():
+                    article = NewsArticle.objects.create(
+                        source=source,
+                        **article_data
+                    )
                 return 'created'
 
         except Exception as e:
