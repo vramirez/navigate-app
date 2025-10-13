@@ -94,15 +94,21 @@ export const getSources = async (params = {}) => {
  * Fetch articles for Dashboard with optimal filters
  * Returns high-relevance, recent articles suitable for business recommendations
  * @param {Object} options - Additional filter options
+ * @param {boolean} options.excludePastEvents - Exclude events that already happened (default: true)
+ * @param {string} options.sourceCountry - Filter by source country code (default: 'CO')
+ * @param {number} options.minRelevance - Minimum relevance score (default: 0.6)
+ * @param {number} options.daysAgo - Number of days to look back (default: 14)
  * @returns {Promise<Array>} Filtered article list
  */
 export const getDashboardArticles = async (options = {}) => {
   try {
-    console.log('newsApi: Fetching dashboard articles...')
+    console.log('newsApi: Fetching dashboard articles with options:', options)
     const response = await apiClient.get('/api/news/articles/', {
       params: {
-        days_ago: 30, // Last 30 days
-        min_relevance: 0.0, // Show all processed articles (0.0+), hide unprocessed (-1.0)
+        days_ago: options.daysAgo ?? 14, // Last 14 days (reduced from 30)
+        min_relevance: options.minRelevance ?? 0.6, // Minimum relevance 0.6 (increased from 0.0)
+        source_country: options.sourceCountry ?? 'CO', // Only Colombian sources
+        exclude_past_events: options.excludePastEvents ?? true, // Exclude past events by default
         limit: 20, // Top 20 articles
         ...options,
       },
@@ -110,7 +116,8 @@ export const getDashboardArticles = async (options = {}) => {
     console.log('newsApi: Response received:', {
       status: response.status,
       count: response.data.count,
-      resultsLength: response.data.results?.length
+      resultsLength: response.data.results?.length,
+      filters: response.config.params
     })
     return response.data.results || response.data
   } catch (error) {

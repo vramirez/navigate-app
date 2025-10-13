@@ -33,10 +33,16 @@ export default function Dashboard() {
     return saved !== null ? JSON.parse(saved) : true
   })
 
-  // Fetch articles from API
+  // Filter state for past events (task-11)
+  const [showPastEvents, setShowPastEvents] = useState(() => {
+    const saved = localStorage.getItem('showPastEvents')
+    return saved !== null ? JSON.parse(saved) : false // Default to false (hide past events)
+  })
+
+  // Fetch articles from API (task-11: pass showPastEvents to control filtering)
   const { data: articlesData, isLoading: articlesLoading, error: articlesError } = useQuery(
-    'dashboardArticles',
-    getDashboardArticles,
+    ['dashboardArticles', showPastEvents], // Include showPastEvents in cache key for automatic refetch
+    () => getDashboardArticles({ excludePastEvents: !showPastEvents }),
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
       cacheTime: 10 * 60 * 1000, // 10 minutes
@@ -79,11 +85,17 @@ export default function Dashboard() {
     return sorted
   }, [articlesData, recommendationsData, showLowRelevance])
 
-  // Handle filter toggle
+  // Handle filter toggles
   const handleToggleLowRelevance = () => {
     const newValue = !showLowRelevance
     setShowLowRelevance(newValue)
     localStorage.setItem('showLowRelevance', JSON.stringify(newValue))
+  }
+
+  const handleTogglePastEvents = () => {
+    const newValue = !showPastEvents
+    setShowPastEvents(newValue)
+    localStorage.setItem('showPastEvents', JSON.stringify(newValue))
   }
 
   // Loading state
@@ -211,18 +223,32 @@ export default function Dashboard() {
             {t('dashboard.welcome')}
           </h1>
 
-          {/* Relevance Filter Toggle */}
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showLowRelevance}
-              onChange={handleToggleLowRelevance}
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="text-sm text-gray-600">
-              Mostrar baja relevancia
-            </span>
-          </label>
+          {/* Filter Toggles (task-11) */}
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showLowRelevance}
+                onChange={handleToggleLowRelevance}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600">
+                Mostrar baja relevancia
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showPastEvents}
+                onChange={handleTogglePastEvents}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600">
+                Mostrar eventos pasados
+              </span>
+            </label>
+          </div>
         </div>
 
         <p className="text-lg" style={{color: '#f3e9e9ff', opacity: 0.55}}>
@@ -246,6 +272,8 @@ export default function Dashboard() {
                         <span className={getCategoryBadgeClasses(news.category)}>
                           <span>{getCategoryIcon(news.category)}</span>
                           <span>{t(`newsCategories.public.${news.category}`)}</span>
+                          <span className="ml-1.5 opacity-75">•</span>
+                          <span className="ml-1 font-bold">{(news.relevanceScore * 100).toFixed(0)}%</span>
                         </span>
                       )}
                       <h2 className="text-base font-semibold text-gray-300 flex-1">
@@ -288,6 +316,8 @@ export default function Dashboard() {
                       <span className={getCategoryBadgeClasses(news.category)}>
                         <span>{getCategoryIcon(news.category)}</span>
                         <span>{t(`newsCategories.public.${news.category}`)}</span>
+                        <span className="ml-1.5 opacity-75">•</span>
+                        <span className="ml-1 font-bold">{(news.relevanceScore * 100).toFixed(0)}%</span>
                       </span>
                     )}
                     <RelevanceBadge score={news.relevanceScore} />

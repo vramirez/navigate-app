@@ -62,6 +62,14 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
         features_extracted = self.request.query_params.get('features_extracted')
         event_scale = self.request.query_params.get('event_scale')
 
+        # Temporal filtering (Phase 3 - task-11)
+        exclude_past_events = self.request.query_params.get('exclude_past_events')
+        event_start_date_gte = self.request.query_params.get('event_start_date_gte')
+        event_start_date_lte = self.request.query_params.get('event_start_date_lte')
+
+        # Geographic filtering (Phase 3 - task-11)
+        source_country = self.request.query_params.get('source_country')
+
         # City filtering (legacy - source city or event location)
         if city:
             queryset = queryset.filter(
@@ -88,13 +96,36 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
         if is_processed is not None:
             queryset = queryset.filter(is_processed=is_processed.lower() == 'true')
 
-        # Date filtering
+        # Date filtering (published date)
         if days_ago:
             try:
                 date_threshold = timezone.now() - timedelta(days=int(days_ago))
                 queryset = queryset.filter(published_date__gte=date_threshold)
             except ValueError:
                 pass
+
+        # Temporal filtering (event date) - task-11
+        # Exclude past events (but keep articles without event dates)
+        if exclude_past_events and exclude_past_events.lower() == 'true':
+            queryset = queryset.filter(
+                Q(event_start_datetime__gte=timezone.now()) | Q(event_start_datetime__isnull=True)
+            )
+
+        # Event date range filtering
+        if event_start_date_gte:
+            try:
+                queryset = queryset.filter(event_start_datetime__gte=event_start_date_gte)
+            except ValueError:
+                pass
+        if event_start_date_lte:
+            try:
+                queryset = queryset.filter(event_start_datetime__lte=event_start_date_lte)
+            except ValueError:
+                pass
+
+        # Geographic filtering by source country - task-11
+        if source_country:
+            queryset = queryset.filter(source__country=source_country)
 
         # Relevance/suitability scores
         if min_relevance:
