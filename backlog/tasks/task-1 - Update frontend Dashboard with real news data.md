@@ -208,6 +208,72 @@ The dashboard currently displays mock news scenarios created during Phase 1. Now
 - [x] Responsive design maintained on mobile devices ✅
 - [x] Performance: Initial load < 2 seconds ✅
 
+### 2025-10-13 - Visual Relevance Indicators & Article Filtering
+
+**🎯 Enhancement: Show All Articles with Visual Relevance Indicators**
+
+**Problem Discovered:**
+- Dashboard only showed 2 articles due to high relevance filter (0.6 minimum)
+- 347 out of 349 articles had relevance score = 0.0 (processed but low relevance)
+- Users couldn't see what news was available in the database
+- No visual distinction between "not processed" vs "processed but not relevant"
+
+**Root Cause Analysis:**
+- ALL 349 articles already feature-extracted by ML pipeline
+- Only 2 articles (Maratón Medellín, Copa América) scored > 0.6
+- Most articles scored 0.0 because events were in Spain/Argentina/USA, not Colombian cities
+- API filter `min_relevance: 0.6` hid all low-relevance articles
+
+**Solution Implemented:**
+
+1. **Updated NewsArticle Model** (`backend/news/models.py`)
+   - Changed `business_relevance_score` default: `0.0` → `-1.0`
+   - New meaning: `-1.0` = not processed, `0.0+` = processed with score
+   - Added help text explaining score ranges
+
+2. **Created RelevanceBadge Component** (`frontend/src/components/RelevanceBadge.jsx`)
+   - Visual indicators for 4 relevance levels:
+     - ⭐ High (0.6-1.0): Green badge - "Alta relevancia"
+     - 📊 Medium (0.3-0.6): Yellow badge - "Relevancia media"
+     - 📰 Low (0.0-0.3): Gray badge - "Baja relevancia"
+     - ⏳ Unprocessed (-1.0): Red badge - "Sin procesar"
+   - Tooltips show exact relevance scores
+   - Color-coded for quick scanning
+
+3. **Updated Dashboard Integration** (`frontend/src/pages/Dashboard.jsx`)
+   - Displays RelevanceBadge next to category badge
+   - Changed API filter: `min_relevance: 0.6` → `0.0` (show all processed)
+   - Added "Mostrar baja relevancia" toggle checkbox
+   - Filter preference persisted to localStorage
+   - When unchecked, filters out articles with score < 0.3
+
+4. **Updated API Service** (`frontend/src/services/newsApi.js`)
+   - Lowered relevance threshold to 0.0
+   - Updated comment: "Show all processed articles (0.0+), hide unprocessed (-1.0)"
+
+**Results:**
+- Dashboard now displays **288 articles** (last 30 days) instead of just 2
+- All processed articles visible with clear relevance indicators
+- Users can toggle to see only medium/high relevance if desired
+- Transparent ML scoring - users understand article relevance
+- Maintains all existing functionality (like/dislike, recommendations)
+
+**Files Modified:**
+- `backend/news/models.py` - Model default change
+- `frontend/src/components/RelevanceBadge.jsx` - New component
+- `frontend/src/pages/Dashboard.jsx` - Badge display + filter toggle
+- `frontend/src/services/newsApi.js` - API filter update
+
+**Git Commit:**
+- `d60b808` - feat: Add relevance score visual indicators and filtering to Dashboard
+
+**Testing:**
+- ✅ API returns 288 articles with min_relevance=0.0
+- ✅ Relevance badges display correctly for all score ranges
+- ✅ Filter toggle works and persists to localStorage
+- ✅ Low-relevance articles filter correctly when toggle unchecked
+- ✅ All UI interactions still functional
+
 **✅ TASK COMPLETE - READY FOR HUMAN APPROVAL**
 
-All acceptance criteria met. The Dashboard now successfully fetches and displays real news data from the Phase 2 crawler system. The system is production-ready for Phase 3 ML integration.
+All acceptance criteria met. The Dashboard now successfully fetches and displays real news data from the Phase 2 crawler system with transparent relevance scoring. Users can see all available articles with visual indicators and optional filtering.

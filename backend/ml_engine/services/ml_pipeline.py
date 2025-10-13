@@ -421,16 +421,30 @@ class MLOrchestrator:
                     'features_extracted': True
                 }
 
-            # Step 4: Find matching businesses
+            # Step 4: Find matching businesses and calculate max relevance
             matching_businesses = []
+            max_relevance = 0.0
+
             for business in Business.objects.filter(is_active=True):
                 if not self.geo_matcher.is_relevant(article, business):
                     continue
 
                 relevance = self.business_matcher.calculate_relevance(article, business)
+
+                # Track highest relevance score across all businesses
+                if relevance > max_relevance:
+                    max_relevance = relevance
+
                 # Lower threshold to 0.4 to catch more potential matches
                 if relevance > 0.4:
                     matching_businesses.append((business, relevance))
+
+            # Set article's business_relevance_score to max relevance found
+            # This represents how relevant this article is to the MOST interested business
+            article.business_relevance_score = max_relevance
+
+            if save:
+                article.save()
 
             # Step 5: Generate recommendations
             recommendations_created = 0
@@ -446,6 +460,7 @@ class MLOrchestrator:
                 'processed': True,
                 'features_extracted': True,
                 'suitability_score': article.business_suitability_score,
+                'business_relevance_score': article.business_relevance_score,
                 'matching_businesses': len(matching_businesses),
                 'recommendations_created': recommendations_created,
                 'features': features
