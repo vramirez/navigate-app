@@ -3,7 +3,7 @@ id: task-9.3
 title: >-
   Fix ML misclassification: Add politics/international event types and improve
   filtering
-status: In Progress
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-13 21:57'
