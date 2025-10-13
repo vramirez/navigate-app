@@ -18,6 +18,7 @@ import { getCategoryBadgeClasses, getCategoryIcon } from '../utils/categoryUtils
 import { getDashboardArticles } from '../services/newsApi'
 import { getRecommendationsByArticle } from '../services/recommendationsApi'
 import { joinArticlesWithRecommendations, sortByRelevance } from '../utils/dataTransformers'
+import RelevanceBadge from '../components/RelevanceBadge'
 
 export default function Dashboard() {
   const { t } = useTranslation()
@@ -25,6 +26,12 @@ export default function Dashboard() {
   // State for tracking user interactions
   const [newsLikes, setNewsLikes] = useState({})
   const [recommendations, setRecommendations] = useState({})
+
+  // Filter state for low-relevance articles
+  const [showLowRelevance, setShowLowRelevance] = useState(() => {
+    const saved = localStorage.getItem('showLowRelevance')
+    return saved !== null ? JSON.parse(saved) : true
+  })
 
   // Fetch articles from API
   const { data: articlesData, isLoading: articlesLoading, error: articlesError } = useQuery(
@@ -57,13 +64,27 @@ export default function Dashboard() {
     }
   )
 
-  // Join articles with their recommendations
+  // Join articles with their recommendations and apply relevance filter
   const newsWithRecommendations = useMemo(() => {
     if (!articlesData || !recommendationsData) return []
 
     const joined = joinArticlesWithRecommendations(articlesData, recommendationsData)
-    return sortByRelevance(joined)
-  }, [articlesData, recommendationsData])
+    const sorted = sortByRelevance(joined)
+
+    // Apply low-relevance filter if disabled
+    if (!showLowRelevance) {
+      return sorted.filter(news => news.relevanceScore >= 0.3)
+    }
+
+    return sorted
+  }, [articlesData, recommendationsData, showLowRelevance])
+
+  // Handle filter toggle
+  const handleToggleLowRelevance = () => {
+    const newValue = !showLowRelevance
+    setShowLowRelevance(newValue)
+    localStorage.setItem('showLowRelevance', JSON.stringify(newValue))
+  }
 
   // Loading state
   if (articlesLoading || recommendationsLoading) {
@@ -185,9 +206,25 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-3" style={{color: '#c01b1bff', opacity: 0.55}}>
-          {t('dashboard.welcome')}
-        </h1>
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-4xl font-bold" style={{color: '#c01b1bff', opacity: 0.55}}>
+            {t('dashboard.welcome')}
+          </h1>
+
+          {/* Relevance Filter Toggle */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showLowRelevance}
+              onChange={handleToggleLowRelevance}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-600">
+              Mostrar baja relevancia
+            </span>
+          </label>
+        </div>
+
         <p className="text-lg" style={{color: '#f3e9e9ff', opacity: 0.55}}>
           Noticias relevantes y recomendaciones para tu negocio
         </p>
@@ -245,15 +282,16 @@ export default function Dashboard() {
               {/* News Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  {/* Category Badge */}
-                  {news.category && (
-                    <div className="mb-3">
+                  {/* Category and Relevance Badges */}
+                  <div className="mb-3 flex items-center gap-2 flex-wrap">
+                    {news.category && (
                       <span className={getCategoryBadgeClasses(news.category)}>
                         <span>{getCategoryIcon(news.category)}</span>
                         <span>{t(`newsCategories.public.${news.category}`)}</span>
                       </span>
-                    </div>
-                  )}
+                    )}
+                    <RelevanceBadge score={news.relevanceScore} />
+                  </div>
 
                   {/* News Title */}
                   <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight hover:text-blue-600 transition-colors cursor-pointer">

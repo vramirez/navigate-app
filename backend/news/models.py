@@ -572,8 +572,9 @@ class NewsArticle(models.Model):
         verbose_name='Ubicación del evento'
     )
     business_relevance_score = models.FloatField(
-        default=0.0,
-        verbose_name='Puntuación de relevancia comercial'
+        default=-1.0,
+        verbose_name='Puntuación de relevancia comercial',
+        help_text='-1.0 = no procesado, 0.0+ = procesado con score de relevancia'
     )
     
     # Keywords and entities extracted

@@ -102,7 +102,7 @@ export const getDashboardArticles = async (options = {}) => {
     const response = await apiClient.get('/api/news/articles/', {
       params: {
         days_ago: 30, // Last 30 days
-        min_relevance: 0.6, // Minimum 60% relevance
+        min_relevance: 0.0, // Show all processed articles (0.0+), hide unprocessed (-1.0)
         limit: 20, // Top 20 articles
         ...options,
       },
