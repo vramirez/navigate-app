@@ -11,6 +11,7 @@ const Business = React.lazy(() => import('./pages/Business'))
 const News = React.lazy(() => import('./pages/News'))
 const Settings = React.lazy(() => import('./pages/Settings'))
 const Login = React.lazy(() => import('./pages/Login'))
+const ApiTest = React.lazy(() => import('./pages/ApiTest'))
 
 // Mock authentication hook - replace with real auth later
 const useAuth = () => {
@@ -55,6 +56,7 @@ function App() {
           <Route path="/business" element={<Business />} />
           <Route path="/news" element={<News />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/api-test" element={<ApiTest />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Suspense>

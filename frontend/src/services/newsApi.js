@@ -98,6 +98,7 @@ export const getSources = async (params = {}) => {
  */
 export const getDashboardArticles = async (options = {}) => {
   try {
+    console.log('newsApi: Fetching dashboard articles...')
     const response = await apiClient.get('/api/news/articles/', {
       params: {
         days_ago: 30, // Last 30 days
@@ -106,9 +107,20 @@ export const getDashboardArticles = async (options = {}) => {
         ...options,
       },
     })
+    console.log('newsApi: Response received:', {
+      status: response.status,
+      count: response.data.count,
+      resultsLength: response.data.results?.length
+    })
     return response.data.results || response.data
   } catch (error) {
-    console.error('Error fetching dashboard articles:', error)
+    console.error('newsApi: Error fetching dashboard articles:', error)
+    console.error('newsApi: Error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    })
     throw error
   }
 }

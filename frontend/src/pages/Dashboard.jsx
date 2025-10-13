@@ -33,6 +33,17 @@ export default function Dashboard() {
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
       cacheTime: 10 * 60 * 1000, // 10 minutes
+      onError: (error) => {
+        console.error('Dashboard: Error fetching articles:', error)
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+        })
+      },
+      onSuccess: (data) => {
+        console.log('Dashboard: Articles fetched successfully:', data)
+      },
     }
   )
 
