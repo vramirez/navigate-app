@@ -1,7 +1,7 @@
 ---
 id: task-9.2
 title: 'Improve article UX: clickable links and clean category names'
-status: In Progress
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-13 21:45'
