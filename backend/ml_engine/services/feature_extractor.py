@@ -73,6 +73,26 @@ class FeatureExtractor:
         'nightlife': [
             r'fiesta', r'rumba', r'discoteca', r'club\s+nocturno',
             r'vida\s+nocturna', r'bar\s+', r'pub\s+'
+        ],
+        # Low-relevance event types (should be filtered by PreFilter)
+        'politics': [
+            r'pol[ií]tica', r'gobierno', r'congreso', r'senado', r'c[aá]mara',
+            r'legislaci[oó]n', r'proyecto\s+de\s+ley', r'ministro', r'presidente',
+            r'alcalde', r'gobernador', r'elecciones', r'votaci[oó]n', r'partido\s+pol[ií]tico'
+        ],
+        'international': [
+            r'internacional', r'extranjero', r'exterior', r'mundial',
+            r'estados\s+unidos', r'europa', r'asia', r'áfrica',
+            r'otan', r'onu', r'diplomacia', r'embajada', r'pa[ií]ses'
+        ],
+        'conflict': [
+            r'bombardeo', r'ataque', r'guerra', r'militar', r'ej[eé]rcito',
+            r'conflicto\s+armado', r'operaci[oó]n\s+militar', r'ofensiva',
+            r'tropas', r'misil', r'drone', r'combate'
+        ],
+        'crime': [
+            r'homicidio', r'asesinato', r'crimen', r'delincuencia',
+            r'robo', r'atraco', r'hurto', r'secuestro', r'narcotr[aá]fico'
         ]
     }
 
