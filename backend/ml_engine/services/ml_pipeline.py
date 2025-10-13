@@ -43,18 +43,32 @@ class PreFilter:
     LOW_RELEVANCE_CATEGORIES = {
         'politics': 0.15,
         'international': 0.10,
+        'conflict': 0.05,
+        'crime': 0.10,
     }
 
     HOSPITALITY_KEYWORDS = [
-        'restaurante', 'caf[eé]', 'bar', 'pub', 'cerveza',
-        'comida', 'gastronom[ií]a', 'reservas', 'mesa',
-        'm[uú]sica en vivo', 'happy hour', 'brunch'
+        'restaurante', r'caf[eé]', 'bar', 'pub', 'cerveza',
+        'comida', r'gastronom[ií]a', 'reservas', 'mesa',
+        r'm[uú]sica\s+en\s+vivo', r'happy\s+hour', 'brunch'
     ]
 
     NEGATIVE_KEYWORDS = [
         'asesinato', 'homicidio', 'accidente', 'muerto',
         'robo', 'atraco', 'incendio', 'tragedia',
-        'corrupci[oó]n', 'esc[aá]ndalo'
+        r'corrupci[oó]n', r'esc[aá]ndalo',
+        'bombardeo', 'ataque', 'guerra', r'conflicto\s+armado',
+        r'narcotr[aá]fico', 'violencia', r'v[ií]ctima', 'secuestro'
+    ]
+
+    # Paywall/cookie wall detection patterns
+    PAYWALL_PATTERNS = [
+        r'cookies?\s+propias\s+y\s+de\s+terceros',
+        r'inicia\s+sesi[oó]n',
+        r'ya\s+tienes\s+una\s+cuenta',
+        r'suscr[ií]bete',
+        r'contenido\s+exclusivo',
+        r'datos\s+de\s+navegaci[oó]n',
     ]
 
     def calculate_suitability(self, article: NewsArticle, event_type: Optional[str] = None) -> float:
@@ -68,6 +82,27 @@ class PreFilter:
         Returns:
             float between 0.0 and 1.0
         """
+        text = f"{article.title} {article.content}".lower()
+
+        # Content quality checks - detect paywalls and bad content
+        paywall_detected = any(re.search(pattern, text) for pattern in self.PAYWALL_PATTERNS)
+        no_keywords = not article.extracted_keywords or len(article.extracted_keywords) == 0
+        short_content = len(article.content) < 200
+
+        # Reject if content is behind paywall (cookie wall, login wall, etc.)
+        if paywall_detected:
+            logger.warning(f"Paywall detected for article {article.id}, rejecting")
+            return 0.0
+
+        # Warn but don't reject if no keywords (ML may not have run yet)
+        if no_keywords and short_content:
+            logger.warning(f"Low quality content for article {article.id}: "
+                          f"no_keywords={no_keywords}, content_length={len(article.content)}")
+            # Don't immediately reject - give a penalty instead
+            score_penalty = 0.3
+        else:
+            score_penalty = 0.0
+
         score = 0.0
 
         # Base score from event type
@@ -82,15 +117,17 @@ class PreFilter:
                 score = 0.4  # Unknown event type gets medium-low score
 
         # Boost for hospitality keywords
-        text = f"{article.title} {article.content}".lower()
         hospitality_matches = sum(1 for kw in self.HOSPITALITY_KEYWORDS
                                    if re.search(kw, text))
         score += min(0.3, hospitality_matches * 0.1)
 
-        # Penalize negative keywords
+        # Penalize negative keywords (stronger penalty to filter out bad news)
         negative_matches = sum(1 for kw in self.NEGATIVE_KEYWORDS
                                 if re.search(kw, text))
-        score -= negative_matches * 0.2
+        score -= negative_matches * 0.5
+
+        # Apply content quality penalty
+        score -= score_penalty
 
         # Clip to 0.0-1.0
         return max(0.0, min(1.0, score))
@@ -165,7 +202,18 @@ class GeographicMatcher:
         if business.include_citywide_events and article.event_scale in ['large', 'massive']:
             return True
 
-        return True  # Default to showing (let business_suitability_score filter)
+        # Default: require geographic match (stricter filtering)
+        # Only allow articles without city if they are truly massive national events
+        if not article.primary_city:
+            # No city data - only show if massive scale AND high-relevance event type
+            if article.event_scale == 'massive' and article.event_type_detected in [
+                'sports_match', 'concert', 'festival', 'marathon'
+            ]:
+                return True
+            return False
+
+        # If we get here, article has city but it doesn't match - reject
+        return False
 
 
 class BusinessMatcher:
