@@ -51,7 +51,7 @@ class NewsArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsArticle
         fields = [
-            'id', 'source', 'source_name', 'source_country', 'title', 'content', 'url',
+            'id', 'source', 'source_name', 'source_country', 'title', 'content', 'first_paragraph', 'url',
             'author', 'published_date', 'section', 'crawl_section',
             # Legacy fields (Phase 1)
             'event_type', 'event_date', 'event_location', 'business_relevance_score',

@@ -323,14 +323,14 @@ class NewsArticleAdmin(admin.ModelAdmin):
     ]
     search_fields = ['title', 'content', 'author', 'crawl_section']
     readonly_fields = [
-        'source', 'title', 'content', 'url', 'author', 'published_date',
+        'source', 'title', 'content', 'first_paragraph', 'url', 'author', 'published_date',
         'section', 'crawl_section', 'created_at', 'updated_at'
     ]
     date_hierarchy = 'published_date'
 
     fieldsets = (
         ('Artículo (Datos del Crawler - Solo Lectura)', {
-            'fields': ('source', 'title', 'content', 'url', 'author', 'published_date', 'section', 'crawl_section'),
+            'fields': ('source', 'title', 'content', 'first_paragraph', 'url', 'author', 'published_date', 'section', 'crawl_section'),
             'description': 'Estos campos son generados automáticamente por el crawler y no pueden ser modificados.'
         }),
         ('Procesamiento ML (Editable)', {

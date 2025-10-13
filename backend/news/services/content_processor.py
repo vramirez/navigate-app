@@ -31,6 +31,58 @@ class ContentProcessorService:
         self.rss_service = RSSDiscoveryService()
         self.manual_crawler = ManualCrawlerService()
 
+    def _extract_first_paragraph(self, content: str) -> str:
+        """
+        Extract the first substantial paragraph from article content
+
+        Args:
+            content: Full article content (may contain HTML or plain text)
+
+        Returns:
+            First paragraph as plain text (minimum 50 chars)
+        """
+        if not content:
+            return ''
+
+        # Clean HTML if present
+        soup = BeautifulSoup(content, 'html.parser')
+        clean_text = soup.get_text(separator=' ', strip=True)
+        clean_text = ' '.join(clean_text.split())  # Normalize whitespace
+
+        # Try to find first paragraph by splitting on double newlines or period+newline
+        paragraphs = re.split(r'\n\n+|\.\s*\n', clean_text)
+
+        # Find first substantial paragraph (>50 chars but < 600 chars to avoid returning entire article)
+        for paragraph in paragraphs:
+            paragraph = paragraph.strip()
+            if 50 <= len(paragraph) < 600:
+                return paragraph
+
+        # Fallback: Return first 250 chars truncated at sentence boundary
+        if len(clean_text) >= 50:
+            # Try to break at sentence boundary
+            truncated = clean_text[:250]
+            last_period = truncated.rfind('.')
+            last_exclamation = truncated.rfind('!')
+            last_question = truncated.rfind('?')
+
+            # Find the last sentence ending
+            last_sentence_end = max(last_period, last_exclamation, last_question)
+
+            if last_sentence_end > 50:
+                return truncated[:last_sentence_end + 1].strip()
+
+            # No sentence boundary found, just truncate at word boundary
+            if len(clean_text) > 200:
+                truncated = clean_text[:200]
+                last_space = truncated.rfind(' ')
+                if last_space > 50:
+                    return truncated[:last_space] + '...'
+
+            return clean_text[:200]
+
+        return clean_text
+
     def process_news_source(self, source: NewsSource, force_manual: bool = False) -> Dict[str, any]:
         """
         Process a news source following RSS-first priority strategy
@@ -403,9 +455,13 @@ class ContentProcessorService:
             published_date = self._parse_rss_date(entry)
             section = self._extract_section_from_entry(entry)
 
+            # Extract first paragraph for UI display
+            first_paragraph = self._extract_first_paragraph(content)
+
             return {
                 'title': title,
                 'content': content,
+                'first_paragraph': first_paragraph,
                 'url': link,
                 'author': author,
                 'published_date': published_date,
@@ -427,9 +483,15 @@ class ContentProcessorService:
             if len(article_data['content']) < 50:
                 return None
 
+            content = article_data['content'].strip()
+
+            # Extract first paragraph for UI display
+            first_paragraph = self._extract_first_paragraph(content)
+
             return {
                 'title': article_data['title'].strip(),
-                'content': article_data['content'].strip(),
+                'content': content,
+                'first_paragraph': first_paragraph,
                 'url': article_data['url'].strip(),
                 'author': article_data.get('author', '').strip(),
                 'published_date': article_data.get('published_date') or timezone.now(),

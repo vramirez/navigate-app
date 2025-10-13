@@ -1,4 +1,4 @@
-c# Food & Events News Sources Configuration
+# Food & Events News Sources Configuration
 
 **Date**: 2025-10-06
 **Purpose**: Configure Colombian news sources focused on food, gastronomy, restaurants, and events relevant for pub/restaurant business intelligence.

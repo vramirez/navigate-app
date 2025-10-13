@@ -515,12 +515,17 @@ class NewsArticle(models.Model):
     ]
     
     source = models.ForeignKey(
-        NewsSource, 
+        NewsSource,
         on_delete=models.CASCADE,
         related_name='articles'
     )
     title = models.CharField(max_length=300, verbose_name='Título')
     content = models.TextField(verbose_name='Contenido')
+    first_paragraph = models.TextField(
+        blank=True,
+        verbose_name='Primer párrafo',
+        help_text='Extracto del primer párrafo para mostrar en UI (auto-generado)'
+    )
     url = models.URLField(unique=True, verbose_name='URL original')
     
     # Article metadata
@@ -738,7 +743,7 @@ class NewsArticle(models.Model):
         """Prevent modification of crawler-generated fields after creation"""
         # Fields that cannot be modified after creation (data integrity)
         protected_fields = [
-            'source_id', 'title', 'content', 'url', 'author',
+            'source_id', 'title', 'content', 'first_paragraph', 'url', 'author',
             'published_date', 'section', 'crawl_section'
         ]
 
