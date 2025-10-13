@@ -277,7 +277,14 @@ export default function Dashboard() {
                         </span>
                       )}
                       <h2 className="text-base font-semibold text-gray-300 flex-1">
-                        {news.title}
+                        <a
+                          href={news.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-blue-400 transition-colors cursor-pointer"
+                        >
+                          {news.title}
+                        </a>
                       </h2>
                     </div>
                     <div className="flex items-center text-xs text-gray-500">
@@ -324,8 +331,15 @@ export default function Dashboard() {
                   </div>
 
                   {/* News Title */}
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight hover:text-blue-600 transition-colors cursor-pointer">
-                    {news.title}
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">
+                    <a
+                      href={news.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 transition-colors cursor-pointer"
+                    >
+                      {news.title}
+                    </a>
                   </h2>
 
                   {/* News Source Badge */}
@@ -369,10 +383,10 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* News Content */}
+              {/* News Content - Display first paragraph only */}
               <div className="news-content">
                 <p className="text-base leading-relaxed">
-                  {news.content}
+                  {news.firstParagraph}
                 </p>
               </div>
 
