@@ -1,7 +1,7 @@
 ---
 id: task-9.4
 title: Generic Business Recommendations from News Features
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-15 15:40'
