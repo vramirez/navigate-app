@@ -658,6 +658,18 @@ class RecommendationGenerator:
         recommendations = []
         article_content_type = ContentType.objects.get_for_model(NewsArticle)
 
+        # Check for existing recommendations to avoid duplicates
+        # If recommendations already exist for this article-business pair, delete them
+        # (we're regenerating with potentially updated logic)
+        existing_recs = Recommendation.objects.filter(
+            business=business,
+            content_type=article_content_type,
+            object_id=article.id
+        )
+        if existing_recs.exists():
+            logger.info(f"Deleting {existing_recs.count()} existing recommendations for article {article.id}, business {business.id}")
+            existing_recs.delete()
+
         # Calculate days until event
         days_until_event = None
         if article.event_start_datetime:
