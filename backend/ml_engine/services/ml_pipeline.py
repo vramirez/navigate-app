@@ -279,78 +279,355 @@ class RecommendationGenerator:
 
     TEMPLATES = {
         'sports_match': {
-            'categories': ['marketing', 'inventory', 'staffing'],
+            'business_types': ['pub', 'restaurant', 'coffee_shop'],
             'templates': [
                 {
-                    'title': 'Campaña Especial: {event_name}',
-                    'description': 'Crear promoción especial para el evento deportivo. Incremento esperado de tráfico del {traffic_increase}%.',
-                    'action_type': 'create_promotion',
-                    'priority': 'urgent',
-                    'estimated_hours': 12,
+                    'title': 'Aumentar inventario de bebidas para {event_name}',
+                    'description': 'Evento deportivo generará alta demanda de bebidas. Contactar proveedores con anticipación.',
+                    'action_type': 'increase_inventory',
+                    'category': 'inventory',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'urgent',
+                        'medium': 'high',
+                        'small': 'medium'
+                    },
+                    'estimated_hours': 6,
+                    'days_threshold': 7,
                 },
                 {
-                    'title': 'Aumentar stock de cerveza en {percentage}% para el evento',
-                    'description': 'Evento deportivo generará alta demanda. Contactar proveedores inmediatamente.',
-                    'action_type': 'increase_inventory',
-                    'priority': 'high',
-                    'estimated_hours': 6,
+                    'title': 'Campaña de marketing para {event_name}',
+                    'description': 'Crear promoción especial para el evento deportivo. Considerar descuentos o paquetes especiales.',
+                    'action_type': 'create_promotion',
+                    'category': 'marketing',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 12,
+                    'days_threshold': 14,
                 },
                 {
                     'title': 'Contratar personal adicional para día del evento',
-                    'description': 'Volumen de clientes será excepcional durante {event_name}.',
+                    'description': 'Volumen de clientes será excepcional. Considerar contratar staff temporal o ajustar turnos.',
                     'action_type': 'hire_staff',
-                    'priority': 'high',
-                    'estimated_hours': 3,
+                    'category': 'staffing',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 8,
+                    'days_threshold': 10,
                 }
             ]
         },
         'concert': {
-            'categories': ['marketing', 'operations'],
+            'business_types': ['pub', 'restaurant', 'coffee_shop'],
             'templates': [
                 {
-                    'title': 'Promoción especial: Pre y post concierto',
-                    'description': 'Ofrecer descuentos antes/después del concierto de {event_name}.',
+                    'title': 'Promoción pre y post concierto',
+                    'description': 'Ofrecer descuentos antes/después del concierto. Muchos asistentes buscarán dónde cenar/beber.',
                     'action_type': 'create_promotion',
-                    'priority': 'medium',
+                    'category': 'marketing',
+                    'priority_by_scale': {
+                        'massive': 'high',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
                     'estimated_hours': 8,
+                    'days_threshold': 14,
                 },
                 {
-                    'title': 'Extender horario de atención por concierto',
-                    'description': 'Considerar abrir más tarde el día del evento.',
+                    'title': 'Extender horario de atención',
+                    'description': 'Considerar abrir más tarde el día del concierto. Afluencia esperada después del evento.',
                     'action_type': 'adjust_hours',
-                    'priority': 'medium',
+                    'category': 'operations',
+                    'priority_by_scale': {
+                        'massive': 'high',
+                        'large': 'medium',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
                     'estimated_hours': 2,
+                    'days_threshold': 7,
+                },
+                {
+                    'title': 'Aumentar inventario de bebidas y snacks',
+                    'description': 'Conciertos generan alta demanda. Preparar stock adicional de productos populares.',
+                    'action_type': 'increase_inventory',
+                    'category': 'inventory',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 4,
+                    'days_threshold': 5,
                 }
             ]
         },
         'marathon': {
-            'categories': ['inventory', 'operations'],
+            'business_types': ['coffee_shop', 'restaurant', 'pub'],
             'templates': [
                 {
-                    'title': 'Aumentar stock de bebidas isotónicas y agua',
-                    'description': 'Maratón generará alta demanda de hidratación.',
+                    'title': 'Aumentar stock de bebidas saludables',
+                    'description': 'Maratón generará alta demanda de hidratación. Considerar bebidas isotónicas, agua, jugos naturales.',
                     'action_type': 'increase_inventory',
-                    'priority': 'high',
+                    'category': 'inventory',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
                     'estimated_hours': 4,
+                    'days_threshold': 5,
                 },
                 {
-                    'title': 'Menú especial para corredores (desayunos tempranos)',
-                    'description': 'Ofrecer opciones saludables y energéticas.',
+                    'title': 'Menú especial para corredores',
+                    'description': 'Ofrecer opciones saludables y energéticas. Desayunos tempranos, almuerzos ligeros.',
                     'action_type': 'menu_modification',
-                    'priority': 'medium',
+                    'category': 'operations',
+                    'priority_by_scale': {
+                        'massive': 'high',
+                        'large': 'medium',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
                     'estimated_hours': 8,
+                    'days_threshold': 7,
+                },
+                {
+                    'title': 'Considerar apertura temprana',
+                    'description': 'Maratones suelen iniciar temprano. Evaluar abrir más temprano para capturar tráfico.',
+                    'action_type': 'adjust_hours',
+                    'category': 'operations',
+                    'priority_by_scale': {
+                        'massive': 'high',
+                        'large': 'medium',
+                        'medium': 'low',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 2,
+                    'days_threshold': 5,
+                }
+            ]
+        },
+        'festival': {
+            'business_types': ['pub', 'restaurant', 'coffee_shop', 'bookstore'],
+            'templates': [
+                {
+                    'title': 'Preparar inventario para festival',
+                    'description': 'Festival generará alta afluencia. Aumentar stock de productos de alta rotación.',
+                    'action_type': 'increase_inventory',
+                    'category': 'inventory',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'urgent',
+                        'medium': 'high',
+                        'small': 'medium'
+                    },
+                    'estimated_hours': 8,
+                    'days_threshold': 7,
+                },
+                {
+                    'title': 'Campaña de marketing para {event_name}',
+                    'description': 'Aprovechar festival para atraer clientes. Considerar promociones temáticas.',
+                    'action_type': 'create_promotion',
+                    'category': 'marketing',
+                    'priority_by_scale': {
+                        'massive': 'high',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 10,
+                    'days_threshold': 14,
+                },
+                {
+                    'title': 'Contratar personal adicional',
+                    'description': 'Festival traerá volumen excepcional de clientes. Evaluar necesidad de staff temporal.',
+                    'action_type': 'hire_staff',
+                    'category': 'staffing',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 8,
+                    'days_threshold': 10,
                 }
             ]
         },
         'food_event': {
-            'categories': ['partnerships', 'marketing'],
+            'business_types': ['restaurant', 'coffee_shop', 'pub'],
             'templates': [
                 {
                     'title': 'Considerar participación en {event_name}',
-                    'description': 'Oportunidad de visibilidad y networking.',
+                    'description': 'Evento gastronómico ofrece oportunidad de visibilidad y networking con clientes potenciales.',
                     'action_type': 'partner_collaboration',
-                    'priority': 'low',
+                    'category': 'partnerships',
+                    'priority_by_scale': {
+                        'massive': 'medium',
+                        'large': 'medium',
+                        'medium': 'low',
+                        'small': 'low'
+                    },
                     'estimated_hours': 20,
+                    'days_threshold': 30,
+                },
+                {
+                    'title': 'Analizar tendencias gastronómicas',
+                    'description': 'Estudiar tendencias presentadas en el evento. Considerar incorporar ideas innovadoras al menú.',
+                    'action_type': 'menu_modification',
+                    'category': 'operations',
+                    'priority_by_scale': {
+                        'massive': 'low',
+                        'large': 'low',
+                        'medium': 'low',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 6,
+                    'days_threshold': 60,
+                },
+                {
+                    'title': 'Monitorear actividad de competidores',
+                    'description': 'Evento gastronómico puede revelar estrategias de competencia. Estar atento a nuevas ofertas.',
+                    'action_type': 'social_campaign',
+                    'category': 'marketing',
+                    'priority_by_scale': {
+                        'massive': 'medium',
+                        'large': 'low',
+                        'medium': 'low',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 4,
+                    'days_threshold': 14,
+                }
+            ]
+        },
+        'cultural': {
+            'business_types': ['coffee_shop', 'restaurant', 'bookstore'],
+            'templates': [
+                {
+                    'title': 'Promoción pre-función para {event_name}',
+                    'description': 'Eventos culturales atraen público que busca cenar/tomar café antes del evento.',
+                    'action_type': 'create_promotion',
+                    'category': 'marketing',
+                    'priority_by_scale': {
+                        'massive': 'high',
+                        'large': 'medium',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 6,
+                    'days_threshold': 14,
+                },
+                {
+                    'title': 'Ajustar horarios para evento cultural',
+                    'description': 'Considerar extender horario si el evento termina tarde. Capturar tráfico post-función.',
+                    'action_type': 'adjust_hours',
+                    'category': 'operations',
+                    'priority_by_scale': {
+                        'massive': 'medium',
+                        'large': 'medium',
+                        'medium': 'low',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 2,
+                    'days_threshold': 7,
+                }
+            ]
+        },
+        'nightlife': {
+            'business_types': ['pub', 'restaurant'],
+            'templates': [
+                {
+                    'title': 'Aumentar inventario de bebidas alcohólicas',
+                    'description': 'Evento nocturno generará alta demanda. Asegurar stock suficiente de productos populares.',
+                    'action_type': 'increase_inventory',
+                    'category': 'inventory',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 4,
+                    'days_threshold': 5,
+                },
+                {
+                    'title': 'Contratar personal de seguridad/servicio',
+                    'description': 'Evento nocturno puede atraer multitudes. Considerar reforzar staff.',
+                    'action_type': 'hire_staff',
+                    'category': 'staffing',
+                    'priority_by_scale': {
+                        'massive': 'urgent',
+                        'large': 'high',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 6,
+                    'days_threshold': 7,
+                }
+            ]
+        },
+        'conference': {
+            'business_types': ['coffee_shop', 'restaurant'],
+            'templates': [
+                {
+                    'title': 'Paquetes especiales para asistentes de conferencia',
+                    'description': 'Ofrecer menús ejecutivos o descuentos para grupos. Conferencias atraen profesionales.',
+                    'action_type': 'create_promotion',
+                    'category': 'marketing',
+                    'priority_by_scale': {
+                        'massive': 'high',
+                        'large': 'medium',
+                        'medium': 'medium',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 8,
+                    'days_threshold': 14,
+                },
+                {
+                    'title': 'Preparar para incremento en almuerzos',
+                    'description': 'Conferencias generan alta demanda en horario de almuerzo. Aumentar staff y stock.',
+                    'action_type': 'increase_inventory',
+                    'category': 'inventory',
+                    'priority_by_scale': {
+                        'massive': 'high',
+                        'large': 'medium',
+                        'medium': 'low',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 6,
+                    'days_threshold': 7,
+                }
+            ]
+        },
+        'exposition': {
+            'business_types': ['coffee_shop', 'restaurant', 'bookstore'],
+            'templates': [
+                {
+                    'title': 'Promoción cruzada con {event_name}',
+                    'description': 'Exposiciones atraen visitantes culturales. Considerar promociones temáticas.',
+                    'action_type': 'create_promotion',
+                    'category': 'marketing',
+                    'priority_by_scale': {
+                        'massive': 'medium',
+                        'large': 'medium',
+                        'medium': 'low',
+                        'small': 'low'
+                    },
+                    'estimated_hours': 6,
+                    'days_threshold': 14,
                 }
             ]
         }
@@ -372,41 +649,106 @@ class RecommendationGenerator:
         if not event_type or event_type not in self.TEMPLATES:
             return []
 
-        templates = self.TEMPLATES[event_type]['templates']
+        # Check if this event type is applicable to this business type
+        event_config = self.TEMPLATES[event_type]
+        if business.business_type not in event_config.get('business_types', []):
+            return []
+
+        templates = event_config['templates']
         recommendations = []
         article_content_type = ContentType.objects.get_for_model(NewsArticle)
 
-        for template in templates[:2]:  # Max 2 recommendations per article
+        # Calculate days until event
+        days_until_event = None
+        if article.event_start_datetime:
+            time_diff = article.event_start_datetime - timezone.now()
+            days_until_event = max(0, time_diff.days)
+
+        # Get event scale (default to medium if not set)
+        event_scale = article.event_scale or 'medium'
+
+        # Generate recommendations (max 3)
+        for template in templates[:3]:
+            # Check if recommendation is within time threshold
+            if days_until_event is not None:
+                days_threshold = template.get('days_threshold', 365)
+                if days_until_event > days_threshold:
+                    continue  # Skip recommendations that are too far in advance
+
+            # Get priority based on scale
+            priority_by_scale = template.get('priority_by_scale', {})
+            priority = priority_by_scale.get(event_scale, template.get('priority', 'medium'))
+
+            # Adjust priority based on timing (if event is very soon, increase urgency)
+            if days_until_event is not None and days_until_event <= 2:
+                if priority == 'high':
+                    priority = 'urgent'
+                elif priority == 'medium':
+                    priority = 'high'
+
             # Format template with article data
-            event_name = article.title[:100]
-            traffic_increase = '300' if article.event_scale == 'massive' else '150'
-            percentage = '400' if article.event_scale == 'massive' else '200'
+            event_name = article.title[:80]
+
+            # Build enhanced reasoning
+            reasoning_parts = [
+                f"Recomendación generada por evento: {event_type}",
+                f"Título: {article.title[:100]}"
+            ]
+
+            if article.venue_name:
+                reasoning_parts.append(f"Lugar: {article.venue_name}")
+
+            if article.primary_city:
+                city_info = article.primary_city
+                if article.neighborhood:
+                    city_info += f", {article.neighborhood}"
+                reasoning_parts.append(f"Ubicación: {city_info}")
+
+            if days_until_event is not None:
+                reasoning_parts.append(f"Fecha: {article.event_start_datetime.strftime('%d/%m/%Y')} ({days_until_event} días)")
+
+            if article.expected_attendance:
+                reasoning_parts.append(f"Asistencia esperada: {article.expected_attendance:,} personas")
+
+            reasoning_parts.append(f"Escala del evento: {event_scale}")
+
+            # Calculate impact score based on relevance, scale, and timing
+            impact_score = relevance_score * 0.7  # Base from relevance
+
+            # Scale bonus
+            scale_bonus = {
+                'massive': 0.3,
+                'large': 0.2,
+                'medium': 0.1,
+                'small': 0.05
+            }.get(event_scale, 0.1)
+            impact_score += scale_bonus
+
+            # Timing bonus (sooner = higher impact)
+            if days_until_event is not None and days_until_event <= 7:
+                impact_score += 0.1
+
+            impact_score = min(1.0, impact_score)
+
+            # Calculate effort score (normalize to 0-1 range)
+            effort_score = min(1.0, template['estimated_hours'] / 24.0)
 
             rec = Recommendation(
                 business=business,
                 content_type=article_content_type,
                 object_id=article.id,
-                title=template['title'].format(
-                    event_name=event_name,
-                    traffic_increase=traffic_increase,
-                    percentage=percentage
-                ),
-                description=template['description'].format(
-                    event_name=event_name,
-                    traffic_increase=traffic_increase,
-                    percentage=percentage
-                ),
-                category=template['action_type'].split('_')[0],  # Simplify
+                title=template['title'].format(event_name=event_name),
+                description=template['description'],
+                category=template['category'],
                 action_type=template['action_type'],
-                priority=template['priority'],
+                priority=priority,
                 confidence_score=relevance_score,
-                impact_score=min(1.0, relevance_score + 0.1),
-                effort_score=template['estimated_hours'] / 20.0,  # Normalize
+                impact_score=impact_score,
+                effort_score=effort_score,
                 estimated_duration_hours=template['estimated_hours'],
-                reasoning=f"Generado automáticamente basado en análisis de '{article.title[:50]}...'",
-                
-                
-                
+                reasoning='\n'.join(reasoning_parts),
+                recommended_start_date=article.event_start_datetime,
+                recommended_end_date=article.event_end_datetime,
             )
             recommendations.append(rec)
 
