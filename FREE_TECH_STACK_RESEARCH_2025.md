@@ -159,7 +159,7 @@ This research covers the best FREE and open-source frameworks for building a bus
 services:
   - db: PostgreSQL (official image, 5432:5432)
   - backend: Django (8000:8000)
-  - frontend: React (3000:3000)
+  - frontend: React (3001:3000)
 ```
 
 #### Production Optimizations

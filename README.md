@@ -31,7 +31,7 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 ./scripts/create-mock-data.sh
 
 # Access the application
-# Frontend: http://localhost:3000
+# Frontend: http://localhost:3001
 # Backend API: http://localhost:8000
 # Django Admin: http://localhost:8000/admin
 ```
@@ -43,7 +43,7 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 - Username: `admin` / Password: `admin123`
 
 **Business Owner (React App)**
-- URL: http://localhost:3000
+- URL: http://localhost:3001
 - Username: Any email (mock auth)
 - Password: Any password (mock auth)
 - Demo Business: Irish Pub Medellín

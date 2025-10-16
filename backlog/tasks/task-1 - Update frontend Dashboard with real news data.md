@@ -121,7 +121,7 @@ The dashboard currently displays mock news scenarios created during Phase 1. Now
 - ✅ All dependencies resolved (date-fns, axios, react-query)
 
 **Next Steps for Human Review:**
-1. Test Dashboard in browser at http://localhost:3000
+1. Test Dashboard in browser at http://localhost:3001
 2. Verify 349 articles display correctly with real Colombian news
 3. Test loading states (refresh while backend is slow)
 4. Test error states (stop backend, check error message)
