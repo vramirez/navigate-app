@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import {
   HandThumbUpIcon,
   HandThumbDownIcon,
@@ -22,6 +23,7 @@ import RelevanceBadge from '../components/RelevanceBadge'
 
 export default function Dashboard() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   // State for tracking user interactions
   const [newsLikes, setNewsLikes] = useState({})
@@ -277,14 +279,12 @@ export default function Dashboard() {
                         </span>
                       )}
                       <h2 className="text-base font-semibold text-gray-300 flex-1">
-                        <a
-                          href={news.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-blue-400 transition-colors cursor-pointer"
+                        <button
+                          onClick={() => navigate(`/news/${news.id}`)}
+                          className="text-left hover:text-blue-400 transition-colors cursor-pointer"
                         >
                           {news.title}
-                        </a>
+                        </button>
                       </h2>
                     </div>
                     <div className="flex items-center text-xs text-gray-500">
@@ -332,14 +332,12 @@ export default function Dashboard() {
 
                   {/* News Title */}
                   <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">
-                    <a
-                      href={news.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-blue-600 transition-colors cursor-pointer"
+                    <button
+                      onClick={() => navigate(`/news/${news.id}`)}
+                      className="text-left hover:text-blue-600 transition-colors cursor-pointer w-full"
                     >
                       {news.title}
-                    </a>
+                    </button>
                   </h2>
 
                   {/* News Source Badge */}
