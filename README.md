@@ -6,7 +6,12 @@ Business Intelligence News Recommender for Colombian hospitality businesses.
 
 NaviGate analyzes local news, events, and social media to provide actionable business recommendations for coffee shops, restaurants, pubs, and bookstores in Colombian cities (Medellín, Bogotá, Cartagena, Barranquilla).
 
-**🆕 Phase 2 Update**: Now features an advanced news crawler system that automatically discovers RSS feeds and manually crawls news websites from any country, with intelligent content extraction and processing.
+## Project Status
+
+✅ **Phase 1 Complete**: Core infrastructure, models, UI
+✅ **Phase 2 Complete**: Advanced news crawler system with real data ingestion
+🔄 **Phase 3 In Progress**: Frontend integration and ML engine enhancement
+📋 **Phase 4 Planned**: Advanced ML features and deployment
 
 ## Technology Stack
 
@@ -18,23 +23,37 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 - **Infrastructure**: Docker containers
 - **Languages**: Spanish (primary) + English
 
+## ML Architecture (Phase 3 - Implemented)
+
+- **Text Processing**: spaCy Spanish models for NLP
+- **Event Detection**: Automated extraction from news content
+- **Business Matching**: Keyword relevance scoring algorithm
+- **Recommendation Generation**: Template-based with ML confidence scores
+- **Feedback Loop**: User ratings improve future recommendations
+
 ## Quick Start
 
 ```bash
-# 1. Start the development environment
-./scripts/start-server.sh
+# Initial Setup (First time only)
+./scripts/start-server.sh       # Start all Docker services
+./scripts/setup-admin.sh         # Create admin user and demo data
+./scripts/create-mock-data.sh    # Generate sample news
 
-# 2. Set up admin user and initial data
-./scripts/setup-admin.sh
+# Development Cycle (Daily usage)
+./scripts/start-server.sh        # Start of day
+./scripts/stop-server.sh         # End of day
 
-# 3. Create mock news and recommendations
-./scripts/create-mock-data.sh
-
-# Access the application
-# Frontend: http://localhost:3001
-# Backend API: http://localhost:8000
-# Django Admin: http://localhost:8000/admin
+# Troubleshooting
+./scripts/reset-app.sh           # Nuclear option: complete reset
 ```
+
+**Script Safety Features:** All scripts include directory validation, confirmation prompts, status checking, and detailed logging.
+
+### Access Points
+
+- **Frontend**: http://localhost:3001
+- **Backend API**: http://localhost:8000
+- **Django Admin**: http://localhost:8000/admin
 
 ### Test Accounts
 
@@ -47,6 +66,14 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 - Username: Any email (mock auth)
 - Password: Any password (mock auth)
 - Demo Business: Irish Pub Medellín
+
+## Development Workflow
+
+1. **Initial Setup**: Run all scripts in sequence (start-server, setup-admin, create-mock-data)
+2. **Daily Development**: Use start-server.sh and stop-server.sh for daily coding sessions
+3. **Testing Changes**: Use reset-app.sh for a clean slate when needed
+4. **Data Management**: Use Django Admin panel for content creation and configuration
+5. **Client Testing**: React app includes mock authentication for easy frontend testing
 
 ## Project Structure
 
@@ -153,6 +180,18 @@ backend/
 │   └── api/
 │       └── crawler.py      # Crawler management APIs
 ```
+
+## Development Features
+
+- **Comprehensive Scripts**: All scripts include error handling, validation, and user guidance
+- **Mock Authentication**: Easy frontend testing without real authentication setup
+- **Internationalization**: Spanish-first design with English fallback support
+- **Mobile-First PWA**: Responsive design optimized for Colombian market
+- **Docker Environment**: Consistent development across all platforms
+- **Open-Source Stack**: 100% free and open-source technology throughout
+- **Advanced News Crawler**: International support with RSS discovery and manual crawling
+- **Admin Interface**: Non-technical user-friendly Django admin with visual indicators
+- **RESTful APIs**: Programmatic access to all crawler and ML operations
 
 ## License
 
