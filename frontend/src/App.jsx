@@ -9,6 +9,7 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard'))
 const Recommendations = React.lazy(() => import('./pages/Recommendations'))
 const Business = React.lazy(() => import('./pages/Business'))
 const News = React.lazy(() => import('./pages/News'))
+const ArticleDetail = React.lazy(() => import('./pages/ArticleDetail'))
 const Settings = React.lazy(() => import('./pages/Settings'))
 const Login = React.lazy(() => import('./pages/Login'))
 const ApiTest = React.lazy(() => import('./pages/ApiTest'))
@@ -55,6 +56,7 @@ function App() {
           <Route path="/recommendations" element={<Recommendations />} />
           <Route path="/business" element={<Business />} />
           <Route path="/news" element={<News />} />
+          <Route path="/news/:articleId" element={<ArticleDetail />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/api-test" element={<ApiTest />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
