@@ -87,7 +87,8 @@
     "highPriority": "Alta Prioridad",
     "implemented": "Implementadas",
     "recentNews": "Noticias Recientes",
-    "quickActions": "Acciones Rápidas"
+    "quickActions": "Acciones Rápidas",
+    "aiDetailsButton": "Detalles IA"
   },
   "news": {
     "title": "Noticias Relevantes",
