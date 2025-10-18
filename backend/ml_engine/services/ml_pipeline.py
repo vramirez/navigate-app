@@ -12,6 +12,7 @@ from math import radians, cos, sin, asin, sqrt
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 
 from news.models import NewsArticle
 from businesses.models import Business
@@ -778,9 +779,13 @@ class MLOrchestrator:
         self.business_matcher = BusinessMatcher()
         self.rec_generator = RecommendationGenerator()
 
+    @transaction.atomic
     def process_article(self, article: NewsArticle, save: bool = True) -> Dict[str, Any]:
         """
-        Process a single article through the complete pipeline
+        Process a single article through the complete pipeline.
+
+        Uses @transaction.atomic to ensure feature extraction and recommendation
+        generation happen atomically - either both succeed or both rollback.
 
         Args:
             article: NewsArticle object

@@ -55,7 +55,6 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
         primary_city = self.request.query_params.get('primary_city')  # ML extracted city
         event_type = self.request.query_params.get('event_type')  # Legacy field
         event_type_detected = self.request.query_params.get('event_type_detected')  # ML field
-        is_processed = self.request.query_params.get('is_processed')
         days_ago = self.request.query_params.get('days_ago')
         min_relevance = self.request.query_params.get('min_relevance')  # Legacy field
         business_suitability_score__gte = self.request.query_params.get('business_suitability_score__gte')  # ML field
@@ -91,10 +90,6 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(features_extracted=features_extracted.lower() == 'true')
         if event_scale:
             queryset = queryset.filter(event_scale=event_scale)
-
-        # Processing status
-        if is_processed is not None:
-            queryset = queryset.filter(is_processed=is_processed.lower() == 'true')
 
         # Date filtering (published date)
         if days_ago:

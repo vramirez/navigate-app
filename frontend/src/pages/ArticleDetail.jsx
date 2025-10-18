@@ -652,13 +652,7 @@ export default function ArticleDetail() {
         {isProcessingExpanded && (
           <div className="mt-4 space-y-4">
             {/* Processing Status */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Procesado</p>
-                <p className={`font-semibold ${article.is_processed ? 'text-green-600' : 'text-red-600'}`}>
-                  {article.is_processed ? 'Sí' : 'No'}
-                </p>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500 mb-1">Features extraídas</p>
                 <p className={`font-semibold ${article.features_extracted ? 'text-green-600' : 'text-red-600'}`}>

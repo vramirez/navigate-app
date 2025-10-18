@@ -64,7 +64,7 @@ class NewsArticleSerializer(serializers.ModelSerializer):
             'feature_extraction_confidence',
             # Other fields
             'extracted_keywords', 'entities', 'sentiment_score',
-            'is_processed', 'processing_error', 'created_at', 'updated_at'
+            'processing_error', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at', 'features_extracted',
                            'feature_extraction_date', 'feature_extraction_confidence']
@@ -77,7 +77,7 @@ class SocialMediaPostSerializer(serializers.ModelSerializer):
             'id', 'platform', 'post_id', 'author_username', 'content',
             'published_date', 'engagement_metrics', 'location_tags',
             'business_relevance_score', 'extracted_keywords',
-            'sentiment_score', 'is_processed', 'processed_at', 'created_at'
+            'sentiment_score', 'processed_at', 'created_at'
         ]
         read_only_fields = ['created_at', 'processed_at']
 

@@ -597,9 +597,8 @@ class NewsArticle(models.Model):
         default=0.0,
         verbose_name='Puntuación de sentimiento (-1 a 1)'
     )
-    
+
     # Processing status
-    is_processed = models.BooleanField(default=False, verbose_name='Procesado por ML')
     processing_error = models.TextField(blank=True, verbose_name='Error de procesamiento')
 
     # ML Feature Extraction fields (Phase 3 - task-4)
@@ -733,7 +732,6 @@ class NewsArticle(models.Model):
             models.Index(fields=['published_date']),
             models.Index(fields=['event_type']),
             models.Index(fields=['business_relevance_score']),
-            models.Index(fields=['is_processed']),
         ]
 
     def __str__(self):
@@ -829,10 +827,7 @@ class SocialMediaPost(models.Model):
         default=0.0,
         verbose_name='Puntuación de sentimiento'
     )
-    
-    # Processing status
-    is_processed = models.BooleanField(default=False, verbose_name='Procesado')
-    
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
