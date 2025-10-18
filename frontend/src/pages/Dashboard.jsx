@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useQuery } from 'react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -98,6 +98,21 @@ export default function Dashboard() {
     const newValue = !showPastEvents
     setShowPastEvents(newValue)
     localStorage.setItem('showPastEvents', JSON.stringify(newValue))
+  }
+
+  // Restore scroll position when returning from article detail (task-12: #7)
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem('dashboardScrollPosition')
+    if (savedPosition) {
+      window.scrollTo(0, parseInt(savedPosition, 10))
+      sessionStorage.removeItem('dashboardScrollPosition')
+    }
+  }, [])
+
+  // Handle article navigation with scroll position saving
+  const handleArticleClick = (articleId) => {
+    sessionStorage.setItem('dashboardScrollPosition', window.scrollY.toString())
+    navigate(`/news/${articleId}`)
   }
 
   // Loading state
@@ -280,7 +295,7 @@ export default function Dashboard() {
                       )}
                       <h2 className="text-base font-semibold text-gray-300 flex-1">
                         <button
-                          onClick={() => navigate(`/news/${news.id}`)}
+                          onClick={() => handleArticleClick(news.id)}
                           className="text-left hover:text-blue-400 transition-colors cursor-pointer"
                         >
                           {news.title}
@@ -333,7 +348,7 @@ export default function Dashboard() {
                   {/* News Title */}
                   <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">
                     <button
-                      onClick={() => navigate(`/news/${news.id}`)}
+                      onClick={() => handleArticleClick(news.id)}
                       className="text-left hover:text-blue-600 transition-colors cursor-pointer w-full"
                     >
                       {news.title}

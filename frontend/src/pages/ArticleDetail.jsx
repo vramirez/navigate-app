@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from 'react-query'
 import { useTranslation } from 'react-i18next'
@@ -11,9 +11,16 @@ import {
   MapPinIcon,
   UserGroupIcon,
   ChevronDownIcon,
-  ChevronUpIcon
+  ChevronUpIcon,
+  LightBulbIcon
 } from '@heroicons/react/24/outline'
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon
+} from '@heroicons/react/24/solid'
 import { getArticleById } from '../services/newsApi'
+import { getRecommendationsByArticle } from '../services/recommendationsApi'
 import { getCategoryBadgeClasses, getCategoryIcon } from '../utils/categoryUtils'
 import RelevanceBadge from '../components/RelevanceBadge'
 import ScoreIndicator from '../components/ScoreIndicator'
@@ -41,6 +48,22 @@ export default function ArticleDetail() {
       }
     }
   )
+
+  // Fetch recommendations data
+  const { data: recommendationsData } = useQuery(
+    'articleRecommendations',
+    () => getRecommendationsByArticle(1), // TODO: Get actual business ID from auth context
+    {
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 10 * 60 * 1000,
+    }
+  )
+
+  // Filter recommendations for this specific article
+  const articleRecommendations = useMemo(() => {
+    if (!recommendationsData || !articleId) return []
+    return recommendationsData[articleId] || []
+  }, [recommendationsData, articleId])
 
   // Loading state
   if (isLoading) {
@@ -148,6 +171,27 @@ export default function ArticleDetail() {
   }
 
   const readingTime = calculateReadingTime(article.content)
+
+  // Priority color helpers (matching Dashboard)
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'urgent': return 'text-red-600 bg-red-50'
+      case 'high': return 'text-orange-600 bg-orange-50'
+      case 'medium': return 'text-yellow-600 bg-yellow-50'
+      case 'low': return 'text-blue-600 bg-blue-50'
+      default: return 'text-gray-600 bg-gray-50'
+    }
+  }
+
+  const getPriorityText = (priority) => {
+    switch (priority) {
+      case 'urgent': return 'URGENTE'
+      case 'high': return 'ALTA'
+      case 'medium': return 'MEDIA'
+      case 'low': return 'BAJA'
+      default: return 'MEDIA'
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -481,6 +525,112 @@ export default function ArticleDetail() {
                 <KeywordTags keywords={article.entities} type="entity" />
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* SECTION G: Related Recommendations */}
+      {articleRecommendations.length > 0 && (
+        <div className="card">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-shrink-0 w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+              <LightBulbIcon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Recomendaciones generadas</h2>
+              <p className="text-sm text-gray-600">
+                Acciones sugeridas basadas en este artículo
+              </p>
+            </div>
+            <span className="ml-auto text-sm font-semibold px-3 py-1 bg-purple-100 text-purple-800 rounded-full">
+              {articleRecommendations.length}
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            {articleRecommendations.map((rec) => (
+              <div
+                key={rec.id}
+                className="p-5 rounded-lg border-2 border-l-4 border-gray-200 border-l-purple-500 bg-white hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    {/* Priority Badge & Title */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className={`px-2.5 py-1 text-xs font-bold rounded-md uppercase flex-shrink-0 ${getPriorityColor(rec.priority)}`}>
+                        {getPriorityText(rec.priority)}
+                      </span>
+                      <h3 className="font-bold text-lg text-gray-900">
+                        {rec.title}
+                      </h3>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-gray-700 leading-relaxed mb-4">
+                      {rec.description}
+                    </p>
+
+                    {/* Metadata Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      {rec.category && (
+                        <div>
+                          <p className="text-gray-500 font-medium mb-1">Categoría</p>
+                          <p className="text-gray-900 capitalize">{rec.category}</p>
+                        </div>
+                      )}
+                      {rec.action_type && (
+                        <div>
+                          <p className="text-gray-500 font-medium mb-1">Tipo de acción</p>
+                          <p className="text-gray-900 capitalize">{rec.action_type.replace(/_/g, ' ')}</p>
+                        </div>
+                      )}
+                      {rec.estimated_duration_hours && (
+                        <div>
+                          <p className="text-gray-500 font-medium mb-1">Duración estimada</p>
+                          <div className="flex items-center text-gray-900">
+                            <ClockIcon className="h-4 w-4 mr-1 text-gray-500" />
+                            {rec.estimated_duration_hours}h
+                          </div>
+                        </div>
+                      )}
+                      {rec.confidence_score !== undefined && (
+                        <div>
+                          <p className="text-gray-500 font-medium mb-1">Confianza</p>
+                          <p className="text-gray-900">{(rec.confidence_score * 100).toFixed(0)}%</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Status Badges */}
+                    <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
+                      {rec.is_viewed && (
+                        <div className="flex items-center text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md text-xs font-medium">
+                          <CheckCircleIcon className="h-3.5 w-3.5 mr-1" />
+                          Vista
+                        </div>
+                      )}
+                      {rec.is_accepted && (
+                        <div className="flex items-center text-green-700 bg-green-50 px-2.5 py-1 rounded-md text-xs font-medium">
+                          <CheckCircleIcon className="h-3.5 w-3.5 mr-1" />
+                          Aceptada
+                        </div>
+                      )}
+                      {rec.is_implemented && (
+                        <div className="flex items-center text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md text-xs font-medium">
+                          <CheckCircleIcon className="h-3.5 w-3.5 mr-1" />
+                          Implementada
+                        </div>
+                      )}
+                      {!rec.is_viewed && !rec.is_accepted && !rec.is_implemented && (
+                        <div className="flex items-center text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md text-xs font-medium">
+                          Pendiente
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
