@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Business, BusinessKeywords, AdminUser
+from .models import Business, BusinessKeywords, BusinessTypeKeyword, AdminUser
 
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
@@ -40,6 +40,40 @@ class BusinessKeywordsAdmin(admin.ModelAdmin):
     list_display = ['business', 'keyword', 'weight', 'is_negative', 'created_at']
     list_filter = ['is_negative', 'weight', 'created_at']
     search_fields = ['keyword', 'business__name']
+
+@admin.register(BusinessTypeKeyword)
+class BusinessTypeKeywordAdmin(admin.ModelAdmin):
+    list_display = ['keyword', 'business_type', 'category', 'weight', 'is_active', 'created_at']
+    list_filter = ['business_type', 'category', 'is_active', 'weight']
+    search_fields = ['keyword', 'category']
+    list_editable = ['weight', 'is_active']
+    ordering = ['business_type', 'category', 'keyword']
+
+    fieldsets = (
+        ('Palabra Clave', {
+            'fields': ('business_type', 'keyword', 'category')
+        }),
+        ('Configuración', {
+            'fields': ('weight', 'is_active')
+        }),
+        ('Metadata', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ['created_at']
+
+    actions = ['activate_keywords', 'deactivate_keywords']
+
+    def activate_keywords(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f'{updated} palabras clave activadas.')
+    activate_keywords.short_description = 'Activar palabras clave seleccionadas'
+
+    def deactivate_keywords(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f'{updated} palabras clave desactivadas.')
+    deactivate_keywords.short_description = 'Desactivar palabras clave seleccionadas'
 
 @admin.register(AdminUser)
 class AdminUserAdmin(admin.ModelAdmin):

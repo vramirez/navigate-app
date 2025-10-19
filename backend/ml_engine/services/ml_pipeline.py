@@ -267,28 +267,22 @@ class BusinessMatcher:
 
         text = f"{article.title} {article.content}".lower()
 
-        # Check business keywords
+        # Check business-specific custom keywords
         keywords = business.keywords.filter(is_negative=False)
         for kw_obj in keywords:
             if kw_obj.keyword.lower() in text:
                 score += kw_obj.weight * 0.2
 
-        # Business type matching
-        if business.business_type == 'pub':
-            pub_keywords = ['cerveza', 'fútbol', 'partido', 'bar']
-            score += sum(0.15 for kw in pub_keywords if kw in text)
+        # Business type matching - now using database keywords
+        from businesses.models import BusinessTypeKeyword
+        type_keywords = BusinessTypeKeyword.objects.filter(
+            business_type=business.business_type,
+            is_active=True
+        )
 
-        elif business.business_type == 'restaurant':
-            rest_keywords = ['comida', 'gastronómico', 'chef', 'restaurante']
-            score += sum(0.15 for kw in rest_keywords if kw in text)
-
-        elif business.business_type == 'coffee_shop':
-            cafe_keywords = ['café', 'brunch', 'desayuno']
-            score += sum(0.15 for kw in cafe_keywords if kw in text)
-
-        elif business.business_type == 'bookstore':
-            book_keywords = ['libro', 'autor', 'lectura', 'literario']
-            score += sum(0.15 for kw in book_keywords if kw in text)
+        for kw_obj in type_keywords:
+            if kw_obj.keyword.lower() in text:
+                score += kw_obj.weight
 
         # Event scale bonus (bigger events = more relevant)
         if article.event_scale == 'massive':

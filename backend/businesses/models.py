@@ -174,6 +174,50 @@ class BusinessKeywords(models.Model):
         negative = " (negativa)" if self.is_negative else ""
         return f"{self.business.name}: {self.keyword}{negative}"
 
+class BusinessTypeKeyword(models.Model):
+    """
+    Keywords for matching articles to business types (shared across all businesses of that type).
+    Different from BusinessKeywords which are per-individual-business custom keywords.
+    """
+    business_type = models.CharField(
+        max_length=50,
+        choices=Business.BUSINESS_TYPES,
+        verbose_name='Tipo de negocio'
+    )
+    keyword = models.CharField(
+        max_length=100,
+        verbose_name='Palabra clave'
+    )
+    weight = models.FloatField(
+        default=0.15,
+        verbose_name='Peso',
+        help_text='Importancia de esta palabra clave en el matching (0.05 - 0.30)'
+    )
+    category = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Categoría',
+        help_text='Ej: bebidas, comida, deportes, eventos'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Activa',
+        help_text='Desactivar sin eliminar para mantener historial'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Palabra clave por tipo de negocio'
+        verbose_name_plural = 'Palabras clave por tipo de negocio'
+        unique_together = ['business_type', 'keyword']
+        ordering = ['business_type', 'category', 'keyword']
+
+    def __str__(self):
+        active = "" if self.is_active else " (inactiva)"
+        category = f" [{self.category}]" if self.category else ""
+        return f"{self.get_business_type_display()}: {self.keyword}{category}{active}"
+
+
 class AdminUser(models.Model):
     """Extended admin user for managing news sources and customer accounts"""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -185,10 +229,10 @@ class AdminUser(models.Model):
         help_text='Ciudades que puede administrar (separadas por comas)'
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         verbose_name = 'Usuario administrador'
         verbose_name_plural = 'Usuarios administradores'
-        
+
     def __str__(self):
         return f"Admin: {self.user.username}"
