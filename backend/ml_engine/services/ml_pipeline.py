@@ -846,6 +846,10 @@ class MLOrchestrator:
             article.feature_extraction_date = timezone.now()
             article.feature_extraction_confidence = 0.8  # Default confidence
 
+            # Calculate feature completeness score
+            from news.utils import calculate_feature_completeness
+            article.feature_completeness_score = calculate_feature_completeness(article)
+
             if save:
                 article.save()
 

@@ -61,7 +61,7 @@ class NewsArticleSerializer(serializers.ModelSerializer):
             'event_start_datetime', 'event_end_datetime', 'event_duration_hours',
             'expected_attendance', 'event_scale', 'business_suitability_score',
             'urgency_score', 'features_extracted', 'feature_extraction_date',
-            'feature_extraction_confidence',
+            'feature_extraction_confidence', 'feature_completeness_score',
             # Geographic relevance fields (task-13)
             'event_country', 'colombian_involvement',
             # Other fields
@@ -69,7 +69,8 @@ class NewsArticleSerializer(serializers.ModelSerializer):
             'processing_error', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at', 'features_extracted',
-                           'feature_extraction_date', 'feature_extraction_confidence']
+                           'feature_extraction_date', 'feature_extraction_confidence',
+                           'feature_completeness_score']
 
 
 class SocialMediaPostSerializer(serializers.ModelSerializer):

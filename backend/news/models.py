@@ -732,6 +732,11 @@ class NewsArticle(models.Model):
         verbose_name='Confianza de extracción',
         help_text='0.0-1.0: Nivel de confianza en las features extraídas'
     )
+    feature_completeness_score = models.FloatField(
+        default=0.0,
+        verbose_name='Completitud de extracción de features',
+        help_text='0.0-1.0: Porcentaje de campos ML extraídos vs total esperado'
+    )
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
