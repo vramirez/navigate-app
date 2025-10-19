@@ -10,7 +10,7 @@ Extracts structured features from news articles:
 
 import re
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime, timedelta
 from django.utils import timezone
 import dateparser
@@ -122,6 +122,33 @@ class FeatureExtractor:
 
     def __init__(self):
         self.nlp = NLPProcessor()
+        # Pattern caching to avoid DB queries on every extraction
+        self._pattern_cache = None
+        self._cache_timestamp = None
+        self.CACHE_DURATION = 300  # 5 minutes
+
+    def _load_patterns_cached(self):
+        """Load extraction patterns from database with 5-minute cache"""
+        from django.utils import timezone
+
+        now = timezone.now()
+
+        # Check if cache is valid
+        if (self._pattern_cache is None or
+            self._cache_timestamp is None or
+            (now - self._cache_timestamp).seconds > self.CACHE_DURATION):
+
+            # Reload from database
+            from event_taxonomy.models import ExtractionPattern
+
+            self._pattern_cache = list(
+                ExtractionPattern.objects.filter(is_active=True)
+                .select_related('event_type', 'event_subtype')
+            )
+            self._cache_timestamp = now
+            logger.info(f"Loaded {len(self._pattern_cache)} extraction patterns from database")
+
+        return self._pattern_cache
 
     def extract_all(self, article_text: str, article_title: str = "") -> Dict[str, Any]:
         """
@@ -137,7 +164,7 @@ class FeatureExtractor:
         full_text = f"{article_title} {article_text}"
 
         # Extract basic features
-        event_type = self.extract_event_type(full_text)
+        event_type, event_subtype = self.extract_event_type(full_text)
         city = self.extract_city(full_text)
 
         # Extract geographic and involvement features
@@ -146,6 +173,7 @@ class FeatureExtractor:
 
         return {
             'event_type': event_type,
+            'event_subtype': event_subtype,
             'city': city,
             'neighborhood': self.extract_neighborhood(full_text),
             'venue': self.extract_venue(full_text),
@@ -156,30 +184,55 @@ class FeatureExtractor:
             'colombian_involvement': colombian_involvement,
         }
 
-    def extract_event_type(self, text: str) -> Optional[str]:
+    def extract_event_type(self, text: str) -> Tuple[Optional[str], Optional[str]]:
         """
-        Classify event type based on pattern matching
+        Classify event type AND subtype using database patterns
+
+        Args:
+            text: Article title + content
 
         Returns:
-            Event type string or None
+            Tuple of (event_type_code, event_subtype_code)
+            Example: ('sports_match', 'colombian_soccer') or ('concert', None)
         """
         text_lower = text.lower()
 
-        # Count matches for each event type
-        scores = {}
-        for event_type, patterns in self.EVENT_TYPE_PATTERNS.items():
-            score = 0
-            for pattern in patterns:
-                matches = len(re.findall(pattern, text_lower))
-                score += matches
-            if score > 0:
-                scores[event_type] = score
+        # Load patterns from database (cached)
+        patterns = self._load_patterns_cached()
 
-        # Return type with highest score
-        if scores:
-            return max(scores, key=scores.get)
+        # Score event types
+        type_scores = {}
+        for pattern_obj in patterns:
+            if pattern_obj.target == 'type':
+                matches = len(re.findall(pattern_obj.pattern, text_lower))
+                if matches > 0:
+                    event_type_code = pattern_obj.event_type.code
+                    score = matches * pattern_obj.weight
+                    type_scores[event_type_code] = type_scores.get(event_type_code, 0) + score
 
-        return None
+        # Get best type
+        best_type = max(type_scores, key=type_scores.get) if type_scores else None
+
+        # If no type detected, return early
+        if not best_type:
+            return (None, None)
+
+        # Score subtypes for the best type
+        subtype_scores = {}
+        for pattern_obj in patterns:
+            if (pattern_obj.target == 'subtype' and
+                pattern_obj.event_type and
+                pattern_obj.event_type.code == best_type):
+                matches = len(re.findall(pattern_obj.pattern, text_lower))
+                if matches > 0:
+                    subtype_code = pattern_obj.event_subtype.code
+                    score = matches * pattern_obj.weight
+                    subtype_scores[subtype_code] = subtype_scores.get(subtype_code, 0) + score
+
+        # Get best subtype (may be None)
+        best_subtype = max(subtype_scores, key=subtype_scores.get) if subtype_scores else None
+
+        return (best_type, best_subtype)
 
     def extract_city(self, text: str) -> Optional[str]:
         """Extract primary city from text"""

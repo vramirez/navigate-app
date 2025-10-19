@@ -830,6 +830,7 @@ class MLOrchestrator:
             features = self.feature_extractor.extract_all(article.content, article.title)
 
             article.event_type_detected = features['event_type'] or ''
+            article.event_subtype = features['event_subtype'] or ''
             article.primary_city = features['city'] or ''
             article.neighborhood = features['neighborhood'] or ''
             article.venue_name = features['venue'] or ''

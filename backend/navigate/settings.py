@@ -41,6 +41,7 @@ LOCAL_APPS = [
     'news',
     'recommendations',
     'ml_engine',
+    'event_taxonomy',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
