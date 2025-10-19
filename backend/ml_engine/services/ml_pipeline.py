@@ -829,10 +829,14 @@ class MLOrchestrator:
             article.neighborhood = features['neighborhood'] or ''
             article.venue_name = features['venue'] or ''
             article.event_start_datetime = features['event_date']
+            article.event_end_datetime = features.get('event_end_datetime')
+            article.event_duration_hours = features.get('event_duration_hours')
             article.expected_attendance = features['attendance']
             article.event_scale = features['scale'] or ''
             article.event_country = features['event_country'] or ''
             article.colombian_involvement = features['colombian_involvement']
+            article.extracted_keywords = features.get('keywords', [])
+            article.entities = features.get('entities', [])
 
             # Step 2: Calculate business suitability
             # Use primary business (business_id=1) for general suitability scoring
