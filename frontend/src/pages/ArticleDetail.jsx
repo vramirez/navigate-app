@@ -26,6 +26,7 @@ import RelevanceBadge from '../components/RelevanceBadge'
 import ScoreIndicator from '../components/ScoreIndicator'
 import KeywordTags from '../components/KeywordTags'
 import EventMap from '../components/EventMap'
+import ArticleDebugPanel from '../components/ArticleDebugPanel'
 
 export default function ArticleDetail() {
   const { articleId } = useParams()
@@ -460,10 +461,20 @@ export default function ArticleDetail() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500 font-medium">Fecha de extracción</p>
-                    <p className="text-gray-900">
-                      {formatDistanceToNow(new Date(article.feature_extraction_date), {
+                    <p
+                      className="text-gray-900 cursor-help"
+                      title={formatDistanceToNow(new Date(article.feature_extraction_date), {
                         addSuffix: true,
                         locale: es
+                      })}
+                    >
+                      {new Date(article.feature_extraction_date).toLocaleString('es-CO', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
                       })}
                     </p>
                   </div>
@@ -689,6 +700,9 @@ export default function ArticleDetail() {
           </div>
         )}
       </div>
+
+      {/* DEBUG: All ML Features - Self-contained component, safe to remove later */}
+      <ArticleDebugPanel article={article} />
     </div>
   )
 }
