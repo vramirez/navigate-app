@@ -62,6 +62,8 @@ class NewsArticleSerializer(serializers.ModelSerializer):
             'expected_attendance', 'event_scale', 'business_suitability_score',
             'urgency_score', 'features_extracted', 'feature_extraction_date',
             'feature_extraction_confidence',
+            # Geographic relevance fields (task-13)
+            'event_country', 'colombian_involvement',
             # Other fields
             'extracted_keywords', 'entities', 'sentiment_score',
             'processing_error', 'created_at', 'updated_at'

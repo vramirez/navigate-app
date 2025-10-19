@@ -434,13 +434,13 @@ export default function ArticleDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ScoreIndicator
                 score={article.business_relevance_score}
-                label="Relevancia para negocio"
-                description="Qué tan relevante es este artículo para tu tipo de negocio"
+                label={t('articleDetail.relevanceScore')}
+                description={t('articleDetail.relevanceScoreDesc')}
               />
               <ScoreIndicator
                 score={article.business_suitability_score}
-                label="Idoneidad empresarial"
-                description="Qué tan adecuado es para generar oportunidades de negocio"
+                label={t('articleDetail.suitabilityScore')}
+                description={t('articleDetail.suitabilityScoreDesc')}
               />
               <ScoreIndicator
                 score={article.urgency_score}

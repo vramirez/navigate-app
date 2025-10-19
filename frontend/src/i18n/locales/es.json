@@ -230,6 +230,10 @@
     "notAvailable": "No disponible",
     "yes": "Sí",
     "no": "No",
+    "relevanceScore": "Relevancia para tu negocio",
+    "relevanceScoreDesc": "Qué tan relevante es este artículo específicamente para TU tipo de negocio y ubicación",
+    "suitabilityScore": "Puntuación ML de filtro (Técnico)",
+    "suitabilityScoreDesc": "Filtro interno del sistema ML para pre-clasificar artículos antes del análisis personalizado",
     "scoreDescriptions": {
       "businessRelevance": "Qué tan relevante es este artículo para tu tipo de negocio",
       "businessSuitability": "Qué tan adecuado es para generar oportunidades de negocio",

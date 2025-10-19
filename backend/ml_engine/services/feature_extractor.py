@@ -30,6 +30,22 @@ class FeatureExtractor:
         'Santa Marta', 'Pasto', 'Villavicencio', 'Montería', 'Valledupar'
     ]
 
+    # International cities by country (for event_country detection)
+    INTERNATIONAL_CITIES = {
+        'México': ['Ciudad de México', 'Guadalajara', 'Monterrey', 'Morelia', 'Puebla', 'Cancún', 'Tijuana'],
+        'Argentina': ['Buenos Aires', 'Córdoba', 'Rosario', 'Mendoza', 'La Plata'],
+        'Brasil': ['São Paulo', 'Río de Janeiro', 'Brasilia', 'Salvador', 'Belo Horizonte'],
+        'Estados Unidos': ['Nueva York', 'Los Ángeles', 'Miami', 'Houston', 'Chicago', 'Las Vegas'],
+        'España': ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao'],
+        'Chile': ['Santiago', 'Valparaíso', 'Concepción'],
+        'Perú': ['Lima', 'Cuzco', 'Arequipa'],
+        'Ecuador': ['Quito', 'Guayaquil', 'Cuenca'],
+        'Qatar': ['Doha'],
+        'Rusia': ['Moscú', 'San Petersburgo'],
+        'Francia': ['París', 'Lyon', 'Marsella'],
+        'Inglaterra': ['Londres', 'Manchester', 'Liverpool'],
+    }
+
     # Medellín neighborhoods
     MEDELLIN_NEIGHBORHOODS = [
         'El Poblado', 'Laureles', 'Envigado', 'Belén', 'Estadio',
@@ -120,14 +136,24 @@ class FeatureExtractor:
         """
         full_text = f"{article_title} {article_text}"
 
+        # Extract basic features
+        event_type = self.extract_event_type(full_text)
+        city = self.extract_city(full_text)
+
+        # Extract geographic and involvement features
+        event_country = self.extract_event_country(full_text, city)
+        colombian_involvement = self.detect_colombian_involvement(full_text)
+
         return {
-            'event_type': self.extract_event_type(full_text),
-            'city': self.extract_city(full_text),
+            'event_type': event_type,
+            'city': city,
             'neighborhood': self.extract_neighborhood(full_text),
             'venue': self.extract_venue(full_text),
             'event_date': self.extract_event_date(full_text),
             'attendance': self.extract_attendance(full_text),
             'scale': self.calculate_scale(full_text),
+            'event_country': event_country,
+            'colombian_involvement': colombian_involvement,
         }
 
     def extract_event_type(self, text: str) -> Optional[str]:
@@ -263,3 +289,93 @@ class FeatureExtractor:
             return 'large'
 
         return 'medium'  # Default
+
+    def detect_colombian_involvement(self, text: str) -> bool:
+        """
+        Detect if event involves Colombia or Colombians
+
+        Returns True if:
+        - Colombian national team/selection participates
+        - Colombian artist/athlete/director participates
+        - Event directly affects Colombia
+
+        Args:
+            text: Article title + content
+
+        Returns:
+            Boolean indicating Colombian involvement
+        """
+        patterns = [
+            r'selección\s+colombia',
+            r'colombia\s+(vs|contra)\s+',
+            r'colombiano[sa]?\s+(participa|compite|juega|dirige|actúa|presenta)',
+            r'(artista|director|atleta|actor|actriz)\s+colombiano',
+            r'equipo\s+colombiano',
+            r'representante\s+de\s+colombia',
+            r'colombia\s+en\s+(la\s+)?(copa|mundial|olimpiadas|festival|ceremonia)',
+            r'(jugador|jugadora)\s+colombiano',
+            r'seleccionado\s+colombiano',
+        ]
+
+        text_lower = text.lower()
+        return any(re.search(pattern, text_lower) for pattern in patterns)
+
+    def extract_event_country(self, text: str, primary_city: str) -> str:
+        """
+        Determine event country from text and extracted city
+
+        Priority:
+        1. Check if primary_city is Colombian
+        2. Check if primary_city is in INTERNATIONAL_CITIES
+        3. Parse country mentions from text patterns
+
+        Args:
+            text: Article title + content
+            primary_city: Extracted city name
+
+        Returns:
+            Country name ('Colombia', 'México', etc.) or empty string
+        """
+        # Check if city is Colombian
+        if primary_city and primary_city in self.COLOMBIAN_CITIES:
+            return 'Colombia'
+
+        # Check if city is in international cities dict
+        for country, cities in self.INTERNATIONAL_CITIES.items():
+            if primary_city and primary_city in cities:
+                return country
+
+        # Parse country from text patterns
+        text_lower = text.lower()
+
+        # Pattern: "en México", "en Argentina", etc.
+        country_patterns = {
+            r'\ben\s+m[eé]xico\b': 'México',
+            r'\ben\s+argentina\b': 'Argentina',
+            r'\ben\s+brasil\b': 'Brasil',
+            r'\ben\s+(los\s+)?estados\s+unidos\b': 'Estados Unidos',
+            r'\ben\s+espa[ñn]a\b': 'España',
+            r'\ben\s+chile\b': 'Chile',
+            r'\ben\s+per[uú]\b': 'Perú',
+            r'\ben\s+ecuador\b': 'Ecuador',
+            r'\ben\s+qatar\b': 'Qatar',
+            r'\ben\s+rusia\b': 'Rusia',
+            r'\ben\s+francia\b': 'Francia',
+            r'\ben\s+inglaterra\b': 'Inglaterra',
+        }
+
+        for pattern, country in country_patterns.items():
+            if re.search(pattern, text_lower):
+                return country
+
+        # Pattern: "festival de Morelia", "copa de Rusia", etc.
+        if 'morelia' in text_lower or 'guadalajara' in text_lower:
+            return 'México'
+        if 'buenos aires' in text_lower or 'río de la plata' in text_lower:
+            return 'Argentina'
+        if 'doha' in text_lower or 'qatar' in text_lower:
+            return 'Qatar'
+        if 'moscú' in text_lower or 'rusia' in text_lower:
+            return 'Rusia'
+
+        return ''  # Unknown/not detected

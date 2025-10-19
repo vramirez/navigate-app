@@ -18,7 +18,13 @@ class BusinessSerializer(serializers.ModelSerializer):
             'id', 'owner', 'name', 'business_type', 'city', 'description',
             'address', 'phone', 'email', 'website', 'target_audience',
             'capacity', 'staff_count', 'email_notifications',
-            'recommendation_frequency', 'created_at', 'updated_at',
+            'recommendation_frequency',
+            # Geographic fields
+            'neighborhood', 'latitude', 'longitude',
+            'geographic_radius_km', 'include_citywide_events', 'include_national_events',
+            # Business characteristics (task-13)
+            'has_tv_screens',
+            'created_at', 'updated_at',
             'keywords', 'recommendations_count'
         ]
         read_only_fields = ['created_at', 'updated_at']

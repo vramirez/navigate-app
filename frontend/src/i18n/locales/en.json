@@ -182,6 +182,12 @@
       "operativos-policiales": "Police Operations"
     }
   },
+  "articleDetail": {
+    "relevanceScore": "Relevance to Your Business",
+    "relevanceScoreDesc": "How relevant this article is specifically to YOUR business type and location",
+    "suitabilityScore": "ML Filter Score (Technical)",
+    "suitabilityScoreDesc": "Internal ML system filter to pre-classify articles before personalized analysis"
+  },
   "mockScenarios": {
     "marathon": {
       "title": "Medellín Marathon 2025",

@@ -72,13 +72,20 @@ class PreFilter:
         r'datos\s+de\s+navegaci[oó]n',
     ]
 
-    def calculate_suitability(self, article: NewsArticle, event_type: Optional[str] = None) -> float:
+    def calculate_suitability(self, article: NewsArticle, event_type: Optional[str] = None, business: Optional[Business] = None) -> float:
         """
         Calculate 0.0-1.0 score for business suitability
+
+        Now considers:
+        - Event type (existing)
+        - Event location/country (NEW)
+        - Colombian involvement (NEW)
+        - Business characteristics (NEW)
 
         Args:
             article: NewsArticle object
             event_type: Detected event type
+            business: Business object (optional, for business-specific scoring)
 
         Returns:
             float between 0.0 and 1.0
@@ -116,6 +123,25 @@ class PreFilter:
                 score = self.LOW_RELEVANCE_CATEGORIES[event_type]
             else:
                 score = 0.4  # Unknown event type gets medium-low score
+
+        # NEW: Penalize international events without Colombian involvement
+        if article.event_country and article.event_country != 'Colombia':
+            if not article.colombian_involvement:
+                return 0.0  # Completely irrelevant
+
+            # Has Colombian involvement but is international
+            # Reduce score significantly
+            score *= 0.4  # 60% penalty
+
+            # Additional penalty if business doesn't have TVs (for sports events)
+            if business:
+                if event_type in ['sports_match', 'tournament'] and not business.has_tv_screens:
+                    return 0.0  # Sports event but no TVs = not relevant
+
+        # NEW: Boost for Colombian involvement in sports
+        if article.colombian_involvement and event_type in ['sports_match', 'tournament']:
+            if business and business.has_tv_screens:
+                score += 0.2  # Extra boost for pubs/bars with TVs
 
         # Boost for hospitality keywords
         hospitality_matches = sum(1 for kw in self.HOSPITALITY_KEYWORDS
@@ -165,6 +191,13 @@ class GeographicMatcher:
         """
         Determine if article is geographically relevant to business
 
+        New logic:
+        1. Local events (same city in Colombia) → ALWAYS relevant
+        2. National events (Colombia, different city) → relevant if business.include_national_events
+        3. International events WITHOUT Colombian involvement → NOT relevant
+        4. International events WITH Colombian involvement → relevant ONLY for gathering places
+        5. Unknown location → conservative, only massive events
+
         Args:
             article: NewsArticle with extracted geographic features
             business: Business object
@@ -172,49 +205,47 @@ class GeographicMatcher:
         Returns:
             True if relevant, False otherwise
         """
-        # Exact city match (required for most cases)
-        if article.primary_city:
-            article_city = article.primary_city.lower().replace('á', 'a').replace('é', 'e').replace('í', 'i')
-            business_city = business.get_city_display().lower().replace('á', 'a').replace('é', 'e').replace('í', 'i')
+        # Case 1: Local event (same city in Colombia)
+        if article.event_country == 'Colombia' and article.primary_city:
+            article_city = self._normalize_city(article.primary_city)
+            business_city = self._normalize_city(business.get_city_display())
 
-            if article_city != business_city:
-                # Check if business wants national events
-                if not business.include_national_events:
-                    return False
-                # Only show truly massive national events
-                if article.event_scale != 'massive':
-                    return False
-
-        # Same neighborhood = always relevant
-        if (article.neighborhood and business.neighborhood and
-                article.neighborhood.lower() == business.neighborhood.lower()):
-            return True
-
-        # Distance-based matching (if coordinates available)
-        if all([article.latitude, article.longitude, business.latitude, business.longitude]):
-            distance = self.haversine_distance(
-                article.latitude, article.longitude,
-                business.latitude, business.longitude
-            )
-            if distance <= business.geographic_radius_km:
+            if article_city == business_city:
+                # Same city = always relevant
                 return True
 
-        # Citywide events (if business opted in)
-        if business.include_citywide_events and article.event_scale in ['large', 'massive']:
-            return True
+            # Case 2: National event (different Colombian city)
+            if business.include_national_events:
+                if article.event_scale in ['massive', 'large']:
+                    return True
 
-        # Default: require geographic match (stricter filtering)
-        # Only allow articles without city if they are truly massive national events
-        if not article.primary_city:
-            # No city data - only show if massive scale AND high-relevance event type
-            if article.event_scale == 'massive' and article.event_type_detected in [
-                'sports_match', 'concert', 'festival', 'marathon'
-            ]:
+        # Case 3: International event WITHOUT Colombian involvement
+        if article.event_country and article.event_country != 'Colombia':
+            if not article.colombian_involvement:
+                return False  # Not relevant at all
+
+            # Case 4: International event WITH Colombian involvement
+            # Only relevant for "gathering places" (pubs with TVs)
+            if business.has_tv_screens:
+                # Check if event type is "watchable"
+                if article.event_type_detected in ['sports_match', 'tournament', 'awards', 'festival']:
+                    return True
+
+            # International events are not relevant otherwise
+            return False
+
+        # Case 5: Unknown location - be conservative
+        if not article.primary_city and not article.event_country:
+            # Only show if it's a massive national event
+            if article.event_scale == 'massive' and business.include_national_events:
                 return True
             return False
 
-        # If we get here, article has city but it doesn't match - reject
         return False
+
+    def _normalize_city(self, city: str) -> str:
+        """Normalize city name for comparison"""
+        return city.lower().replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u')
 
 
 class BusinessMatcher:
@@ -805,10 +836,14 @@ class MLOrchestrator:
             article.event_start_datetime = features['event_date']
             article.expected_attendance = features['attendance']
             article.event_scale = features['scale'] or ''
+            article.event_country = features['event_country'] or ''
+            article.colombian_involvement = features['colombian_involvement']
 
             # Step 2: Calculate business suitability
+            # Use primary business (business_id=1) for general suitability scoring
+            primary_business = Business.objects.filter(id=1).first()
             article.business_suitability_score = self.prefilter.calculate_suitability(
-                article, features['event_type']
+                article, features['event_type'], business=primary_business
             )
 
             # Mark as processed
