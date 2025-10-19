@@ -703,6 +703,19 @@ class NewsArticle(models.Model):
         help_text='0.0-1.0: Qué tan urgente es actuar sobre esta noticia'
     )
 
+    # Colombian relevance fields
+    colombian_involvement = models.BooleanField(
+        default=False,
+        verbose_name='Involucra a Colombia',
+        help_text='True si el evento involucra a Colombia o colombianos (deportes, cultura, etc.)'
+    )
+    event_country = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='País del evento',
+        help_text='País donde ocurre físicamente el evento'
+    )
+
     # Feature extraction metadata
     features_extracted = models.BooleanField(
         default=False,

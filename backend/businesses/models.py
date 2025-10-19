@@ -68,6 +68,13 @@ class Business(models.Model):
         help_text='Mostrar eventos masivos de nivel nacional (Copa América, etc.)'
     )
 
+    # Business characteristics for relevance matching
+    has_tv_screens = models.BooleanField(
+        default=False,
+        verbose_name='Tiene pantallas/TV',
+        help_text='Negocio tiene TVs para ver eventos deportivos/culturales (aumenta relevancia de eventos remotos)'
+    )
+
     description = models.TextField(
         max_length=500,
         blank=True,
