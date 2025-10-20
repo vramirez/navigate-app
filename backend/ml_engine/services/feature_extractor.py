@@ -360,13 +360,19 @@ class FeatureExtractor:
                     'PREFER_DATES_FROM': 'future',
                     'RELATIVE_BASE': now
                 })
-                if parsed and parsed > now - timedelta(days=30):  # Ignore dates more than 30 days in past
-                    # Try to extract time and combine
-                    time_str = self.extract_event_time(text)
-                    if time_str:
-                        hour, minute = map(int, time_str.split(':'))
-                        parsed = parsed.replace(hour=hour, minute=minute)
-                    return parsed
+                if parsed:
+                    # Make timezone-aware before comparison
+                    if not parsed.tzinfo:
+                        parsed = timezone.make_aware(parsed)
+
+                    # Ignore dates more than 30 days in past
+                    if parsed > now - timedelta(days=30):
+                        # Try to extract time and combine
+                        time_str = self.extract_event_time(text)
+                        if time_str:
+                            hour, minute = map(int, time_str.split(':'))
+                            parsed = parsed.replace(hour=hour, minute=minute)
+                        return parsed
 
         # Strategy 2: Comprehensive Spanish date regex patterns
         date_patterns = [
@@ -413,6 +419,10 @@ class FeatureExtractor:
                 })
 
                 if parsed:
+                    # Make timezone-aware before comparison
+                    if not parsed.tzinfo:
+                        parsed = timezone.make_aware(parsed)
+
                     # Ignore dates more than 30 days in past (unless clearly historical)
                     if parsed < now - timedelta(days=30):
                         continue
