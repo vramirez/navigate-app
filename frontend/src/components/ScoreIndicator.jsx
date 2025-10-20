@@ -12,7 +12,11 @@ import PropTypes from 'prop-types'
  * - 0.3-0.6: Yellow (medium)
  * - 0.6-1.0: Green (high)
  */
-export default function ScoreIndicator({ score, label, description }) {
+export default function ScoreIndicator({
+  score = null,
+  label,
+  description = null
+}) {
   // Handle null/undefined scores
   if (score === null || score === undefined) {
     return (
@@ -92,9 +96,4 @@ ScoreIndicator.propTypes = {
   score: PropTypes.number,
   label: PropTypes.string.isRequired,
   description: PropTypes.string
-}
-
-ScoreIndicator.defaultProps = {
-  score: null,
-  description: null
 }

@@ -7,7 +7,11 @@ import PropTypes from 'prop-types'
  * Displays keywords or entities as colored badge pills
  * Supports both array of strings or comma-separated string
  */
-export default function KeywordTags({ keywords, type = 'keyword', className = '' }) {
+export default function KeywordTags({
+  keywords = null,
+  type = 'keyword',
+  className = ''
+}) {
   // Handle empty or null keywords
   if (!keywords || (Array.isArray(keywords) && keywords.length === 0)) {
     return (
@@ -78,10 +82,4 @@ KeywordTags.propTypes = {
   ]),
   type: PropTypes.oneOf(['keyword', 'entity']),
   className: PropTypes.string
-}
-
-KeywordTags.defaultProps = {
-  keywords: null,
-  type: 'keyword',
-  className: ''
 }
