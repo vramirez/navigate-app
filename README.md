@@ -98,6 +98,55 @@ The following environment variables control LLM extraction behavior (configured 
 - `LLM_TIMEOUT_SECONDS`: Request timeout (default: `30`)
 - `LLM_EXTRACTION_ENABLED`: Enable/disable LLM extraction (default: `True`)
 
+### Changing the Ollama Model
+
+You can easily switch to a different Ollama model using either method:
+
+**Method 1: Environment Variable (Quick Test)**
+
+```bash
+# Download and test a different model
+OLLAMA_MODEL=llama3.2:3b ./scripts/setup-ollama.sh
+
+# Other popular options:
+OLLAMA_MODEL=mistral:7b ./scripts/setup-ollama.sh      # 4.1GB - High quality
+OLLAMA_MODEL=qwen2.5:0.5b ./scripts/setup-ollama.sh    # 397MB - Super fast
+```
+
+**Method 2: Docker Compose (Persistent)**
+
+1. Edit `docker/docker-compose.dev.yml` and update both `backend` and `worker` services:
+
+```yaml
+backend:
+  environment:
+    - LLM_MODEL_NAME=llama3.2:3b  # Change this
+
+worker:
+  environment:
+    - LLM_MODEL_NAME=llama3.2:3b  # And this
+```
+
+2. Restart services and pull new model:
+
+```bash
+./scripts/stop-server.sh
+./scripts/start-server.sh
+OLLAMA_MODEL=llama3.2:3b ./scripts/setup-ollama.sh
+```
+
+**Available Models:**
+
+| Model | Size | Speed | Quality | Best For |
+|-------|------|-------|---------|----------|
+| `qwen2.5:0.5b` | 397 MB | ⚡⚡⚡ | ⭐⭐ | Low-resource environments |
+| `llama3.2:1b` | 1.3 GB | ⚡⚡ | ⭐⭐⭐ | Default - Good balance |
+| `llama3.2:3b` | 2.0 GB | ⚡⚡ | ⭐⭐⭐⭐ | Better accuracy |
+| `mistral:7b` | 4.1 GB | ⚡ | ⭐⭐⭐⭐⭐ | High quality extraction |
+| `llama3.1:8b` | 4.7 GB | ⚡ | ⭐⭐⭐⭐⭐ | Best quality |
+
+**Note:** The model is stored in a Docker volume and persists between restarts. You only need to download it once.
+
 ### Testing LLM Extraction
 
 ```bash
