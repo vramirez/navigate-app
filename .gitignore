@@ -100,3 +100,18 @@ coverage.xml
 models/
 data/raw/
 data/processed/
+
+# Temporary test/experimental files
+backend/test_llm_extraction.py
+backend/test_ollama_extraction.py
+backend/test_improved_extraction.py
+backend/test_new_vs_old_extraction.py
+backend/test_extraction_improvement.py
+backend/generate_llm_prompts.py
+backend/generate_comparison_report.py
+backend/generate_comparison_report_ollama.py
+backend/analyze_extraction_gaps.py
+backend/test_articles.json
+backend/new_vs_old_results.json
+backend/demo_recommendations.py
+backend/test_recommendation_generation.py
