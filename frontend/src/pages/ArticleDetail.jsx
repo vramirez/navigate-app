@@ -527,7 +527,10 @@ export default function ArticleDetail() {
             {article.entities && (
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-3">Entidades detectadas</h3>
-                <KeywordTags keywords={article.entities} type="entity" />
+                <KeywordTags
+                  keywords={article.entities?.map(e => typeof e === 'object' ? e.text : e)}
+                  type="entity"
+                />
               </div>
             )}
           </div>
