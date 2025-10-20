@@ -1,13 +1,18 @@
 #!/bin/bash
 
 # Setup script for Ollama LLM service
-# This script pulls the Llama 3.2 1B model and verifies the Ollama service is working
+# This script pulls the configured Ollama model and verifies the service is working
 
 set -e
+
+# Model configuration (can be overridden via environment variable)
+MODEL_NAME="${OLLAMA_MODEL:-llama3.2:1b}"
 
 echo "=================================================="
 echo "Setting up Ollama LLM Service"
 echo "=================================================="
+echo "Model: $MODEL_NAME"
+echo ""
 
 # Check if Ollama container is running
 if ! docker compose -f docker/docker-compose.dev.yml ps ollama | grep -q "running"; then
@@ -38,13 +43,13 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
     exit 1
 fi
 
-# Pull Llama 3.2 1B model
+# Pull the configured model
 echo ""
-echo "Pulling Llama 3.2 1B model..."
+echo "Pulling model: $MODEL_NAME"
 echo "This may take several minutes depending on your internet connection"
 echo ""
 
-docker compose -f docker/docker-compose.dev.yml exec ollama ollama pull llama3.2:1b
+docker compose -f docker/docker-compose.dev.yml exec ollama ollama pull $MODEL_NAME
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -58,7 +63,7 @@ fi
 # Verify model is available
 echo ""
 echo "Verifying model availability..."
-if docker compose -f docker/docker-compose.dev.yml exec ollama ollama list | grep -q "llama3.2:1b"; then
+if docker compose -f docker/docker-compose.dev.yml exec ollama ollama list | grep -q "$MODEL_NAME"; then
     echo "✓ Model is available"
 else
     echo "Warning: Model not found in list, but pull succeeded"
@@ -67,7 +72,7 @@ fi
 # Test model with a simple prompt
 echo ""
 echo "Testing model with a simple prompt..."
-TEST_RESPONSE=$(docker compose -f docker/docker-compose.dev.yml exec ollama ollama run llama3.2:1b "Say 'Hello from Llama!'")
+TEST_RESPONSE=$(docker compose -f docker/docker-compose.dev.yml exec ollama ollama run $MODEL_NAME "Say 'Hello from Llama!'")
 
 if [ $? -eq 0 ]; then
     echo "✓ Model test successful"
@@ -82,8 +87,11 @@ echo "=================================================="
 echo "Ollama setup complete!"
 echo "=================================================="
 echo ""
-echo "Model: llama3.2:1b"
+echo "Model: $MODEL_NAME"
 echo "Endpoint: http://localhost:11434"
 echo ""
 echo "You can now use LLM-based feature extraction in the ML pipeline."
+echo ""
+echo "To use a different model, set OLLAMA_MODEL environment variable:"
+echo "  OLLAMA_MODEL=llama3.2:3b ./scripts/setup-ollama.sh"
 echo ""
