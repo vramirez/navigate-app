@@ -19,6 +19,7 @@ from businesses.models import Business
 from recommendations.models import Recommendation
 from .nlp_processor import NLPProcessor
 from .feature_extractor import FeatureExtractor
+from .llm_extractor import LLMExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -799,10 +800,85 @@ class MLOrchestrator:
     def __init__(self):
         self.nlp = NLPProcessor()
         self.feature_extractor = FeatureExtractor()
+        self.llm_extractor = LLMExtractor()
         self.prefilter = PreFilter()
         self.geo_matcher = GeographicMatcher()
         self.business_matcher = BusinessMatcher()
         self.rec_generator = RecommendationGenerator()
+
+    def _compare_extractions(self, spacy_features: Dict[str, Any], llm_features: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Compare spaCy and LLM extraction results
+
+        Args:
+            spacy_features: Features extracted by spaCy
+            llm_features: Features extracted by LLM
+
+        Returns:
+            Dictionary with comparison metrics
+        """
+        comparison = {
+            'timestamp': timezone.now().isoformat(),
+            'fields_compared': [],
+            'fields_matched': 0,
+            'fields_different': 0,
+            'differences': {}
+        }
+
+        # Define fields to compare
+        comparable_fields = [
+            'event_type', 'event_subtype', 'city', 'neighborhood', 'venue',
+            'scale', 'event_country', 'colombian_involvement'
+        ]
+
+        for field in comparable_fields:
+            spacy_value = spacy_features.get(field)
+            llm_value = llm_features.get(field)
+
+            comparison['fields_compared'].append(field)
+
+            # Normalize values for comparison
+            spacy_str = str(spacy_value).lower().strip() if spacy_value else ''
+            llm_str = str(llm_value).lower().strip() if llm_value else ''
+
+            if spacy_str == llm_str:
+                comparison['fields_matched'] += 1
+            else:
+                comparison['fields_different'] += 1
+                comparison['differences'][field] = {
+                    'spacy': spacy_value,
+                    'llm': llm_value
+                }
+
+        # Calculate completeness scores
+        def count_filled_fields(features):
+            filled = 0
+            for field in comparable_fields:
+                value = features.get(field)
+                if value and value != '' and value is not None and value != False:
+                    filled += 1
+            # Also check temporal fields
+            if features.get('event_date'):
+                filled += 1
+            if features.get('attendance'):
+                filled += 1
+            return filled
+
+        spacy_filled = count_filled_fields(spacy_features)
+        llm_filled = count_filled_fields(llm_features)
+        total_fields = len(comparable_fields) + 2  # +2 for event_date and attendance
+
+        comparison['spacy_completeness'] = spacy_filled / total_fields
+        comparison['llm_completeness'] = llm_filled / total_fields
+        comparison['agreement_rate'] = comparison['fields_matched'] / len(comparable_fields) if comparable_fields else 0
+
+        logger.info(
+            f"Extraction comparison: {comparison['fields_matched']}/{len(comparable_fields)} fields matched, "
+            f"spaCy completeness: {comparison['spacy_completeness']:.2f}, "
+            f"LLM completeness: {comparison['llm_completeness']:.2f}"
+        )
+
+        return comparison
 
     @transaction.atomic
     def process_article(self, article: NewsArticle, save: bool = True) -> Dict[str, Any]:
@@ -853,6 +929,39 @@ class MLOrchestrator:
             # Calculate feature completeness score
             from news.utils import calculate_feature_completeness
             article.feature_completeness_score = calculate_feature_completeness(article)
+
+            # Step 2.5: Run LLM extraction if suitability is high enough (task-9.6)
+            llm_features = None
+            if article.business_suitability_score >= 0.3:
+                logger.info(f"Article {article.id} passed suitability threshold, running LLM extraction")
+                try:
+                    llm_features = self.llm_extractor.extract_all(article.content, article.title)
+
+                    if llm_features:
+                        # Store LLM extraction results
+                        article.llm_features_extracted = True
+                        article.llm_extraction_date = timezone.now()
+                        article.llm_extraction_results = llm_features
+
+                        # Compare spaCy and LLM results
+                        comparison = self._compare_extractions(features, llm_features)
+                        article.extraction_comparison = comparison
+
+                        logger.info(
+                            f"LLM extraction completed for article {article.id}. "
+                            f"Agreement: {comparison.get('agreement_rate', 0):.2%}, "
+                            f"LLM completeness: {comparison.get('llm_completeness', 0):.2%}"
+                        )
+                    else:
+                        logger.warning(f"LLM extraction returned no results for article {article.id}")
+                except Exception as e:
+                    logger.error(f"LLM extraction failed for article {article.id}: {e}", exc_info=True)
+                    # Continue with spaCy results even if LLM fails
+            else:
+                logger.debug(
+                    f"Article {article.id} below suitability threshold ({article.business_suitability_score:.2f}), "
+                    "skipping LLM extraction"
+                )
 
             if save:
                 article.save()

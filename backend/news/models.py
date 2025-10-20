@@ -738,6 +738,30 @@ class NewsArticle(models.Model):
         help_text='0.0-1.0: Porcentaje de campos ML extraídos vs total esperado'
     )
 
+    # LLM-based extraction fields (task-9.6)
+    llm_features_extracted = models.BooleanField(
+        default=False,
+        verbose_name='Features extraídas por LLM',
+        help_text='Indica si el LLM (Ollama) procesó este artículo'
+    )
+    llm_extraction_results = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name='Resultados de extracción LLM',
+        help_text='Diccionario con todas las features extraídas por el LLM'
+    )
+    llm_extraction_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Fecha de extracción LLM'
+    )
+    extraction_comparison = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name='Comparación de extracciones',
+        help_text='Comparación entre resultados de spaCy y LLM'
+    )
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

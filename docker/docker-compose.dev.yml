@@ -27,6 +27,22 @@ services:
       timeout: 5s
       retries: 5
 
+  # Ollama for LLM-based feature extraction
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   # Backend Django API
   backend:
     build:
@@ -40,6 +56,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - OLLAMA_HOST=http://ollama:11434
     volumes:
       - ../backend:/app
       - backend_media:/app/media
@@ -65,6 +82,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - OLLAMA_HOST=http://ollama:11434
     volumes:
       - ../backend:/app
     depends_on:
@@ -91,3 +109,4 @@ volumes:
   postgres_data:
   backend_media:
   backend_static:
+  ollama_data:

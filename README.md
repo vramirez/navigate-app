@@ -18,24 +18,38 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 - **Frontend**: React + Vite + Tailwind CSS
 - **Backend**: Django + Django REST Framework
 - **News Crawling**: Trafilatura + BeautifulSoup + Feedparser
-- **ML/AI**: spaCy (Spanish NLP) + scikit-learn
+- **ML/AI**: spaCy (Spanish NLP) + Ollama (Llama 3.2 1B) + scikit-learn
 - **Database**: SQLite (dev) → PostgreSQL (prod)
 - **Infrastructure**: Docker containers
 - **Languages**: Spanish (primary) + English
 
 ## ML Architecture (Phase 3 - Implemented)
 
+### Dual Extraction Pipeline (spaCy + LLM)
+- **spaCy Extraction**: Fast, rule-based feature extraction using Spanish NLP models
+- **LLM Extraction**: Ollama (Llama 3.2 1B) for enhanced feature understanding
+- **Hybrid Approach**: Both methods run in parallel for high-suitability articles
+- **Comparison System**: Automatic comparison and quality metrics tracking
+
+### Core ML Components
 - **Text Processing**: spaCy Spanish models for NLP
-- **Event Detection**: Automated extraction from news content
+- **Event Detection**: Automated extraction from news content (event type, dates, venues)
 - **Business Matching**: Keyword relevance scoring algorithm
 - **Recommendation Generation**: Template-based with ML confidence scores
 - **Feedback Loop**: User ratings improve future recommendations
+
+### LLM Integration (task-9.6)
+- **Model**: Llama 3.2 1B (lightweight, optimized for local deployment)
+- **Trigger**: Only runs for articles with suitability score >= 0.3
+- **Features Extracted**: Event type, location, dates, attendance, keywords, entities
+- **Comparison Tracking**: Agreement rates and completeness scores stored for analysis
 
 ## Quick Start
 
 ```bash
 # Initial Setup (First time only)
 ./scripts/start-server.sh       # Start all Docker services
+./scripts/setup-ollama.sh        # Setup Ollama and pull Llama 3.2 1B model
 ./scripts/setup-admin.sh         # Create admin user and demo data
 ./scripts/create-mock-data.sh    # Generate sample news
 
@@ -46,6 +60,12 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 # Troubleshooting
 ./scripts/reset-app.sh           # Nuclear option: complete reset
 ```
+
+**Note on Ollama Setup:**
+- The `setup-ollama.sh` script pulls the Llama 3.2 1B model (~1.3GB download)
+- This only needs to be run once after first starting the services
+- LLM extraction is optional - the system works fine with spaCy-only extraction
+- If Ollama is unavailable, articles will be processed with spaCy only
 
 **Script Safety Features:** All scripts include directory validation, confirmation prompts, status checking, and detailed logging.
 
@@ -66,6 +86,46 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 - Username: Any email (mock auth)
 - Password: Any password (mock auth)
 - Demo Business: Irish Pub Medellín
+
+## LLM Configuration
+
+### Environment Variables
+
+The following environment variables control LLM extraction behavior (configured in `docker-compose.dev.yml`):
+
+- `OLLAMA_HOST`: Ollama service URL (default: `http://ollama:11434`)
+- `LLM_MODEL_NAME`: Model to use (default: `llama3.2:1b`)
+- `LLM_TIMEOUT_SECONDS`: Request timeout (default: `30`)
+- `LLM_EXTRACTION_ENABLED`: Enable/disable LLM extraction (default: `True`)
+
+### Testing LLM Extraction
+
+```bash
+# Check if Ollama is running and model is available
+docker compose -f docker/docker-compose.dev.yml exec ollama ollama list
+
+# Test LLM with a simple prompt
+docker compose -f docker/docker-compose.dev.yml exec ollama ollama run llama3.2:1b "Hola"
+
+# Process articles with LLM extraction (via Django shell or management command)
+docker compose -f docker/docker-compose.dev.yml exec backend python manage.py process_articles --limit 5
+```
+
+### Viewing Extraction Results
+
+LLM extraction results are stored in the `NewsArticle` model:
+- `llm_features_extracted`: Boolean indicating if LLM processed the article
+- `llm_extraction_results`: JSON with all extracted features
+- `extraction_comparison`: JSON with comparison between spaCy and LLM results
+
+Access via Django Admin → News → Articles → Select article → View JSON fields
+
+### Performance Considerations
+
+- **Selective Processing**: LLM only runs for articles with `business_suitability_score >= 0.3`
+- **Async Processing**: Celery worker handles extraction asynchronously
+- **Fallback**: System continues with spaCy extraction if LLM fails
+- **Model Size**: Llama 3.2 1B is lightweight (~1.3GB) for local deployment
 
 ## Development Workflow
 
