@@ -114,7 +114,8 @@ class FeatureExtractor:
 
     # Attendance patterns
     ATTENDANCE_PATTERNS = [
-        r'(\d+[,.]?\d*)\s*mil\s+(?:personas|asistentes|espectadores|hinchas)',
+        r'(\d+[,.]?\d*)\s*mill[oó]n(?:es)?\s+(?:de\s+)?(?:personas|asistentes|espectadores|visitantes|hinchas)',
+        r'(\d+[,.]?\d*)\s*mil\s+(?:personas|asistentes|espectadores|hinchas|visitantes)',
         r'm[aá]s\s+de\s+(\d+[,.]?\d*)',
         r'hasta\s+(\d+[,.]?\d*)',
         r'(\d+[,.]?\d*)\s+(?:personas|asistentes|espectadores)',
@@ -375,6 +376,46 @@ class FeatureExtractor:
                         return parsed
 
         # Strategy 2: Comprehensive Spanish date regex patterns
+        text_lower = text.lower()
+
+        # Special handling for date ranges - extract start date only
+        range_patterns = [
+            # Cross-month: "del 28 de octubre al 2 de noviembre"
+            r'del\s+(\d{1,2})\s+de\s+(\w+)\s+al\s+\d{1,2}\s+de\s+\w+(?:\s+de\s+(\d{4}))?',
+            # Same month: "del 20 al 22 de marzo"
+            r'del\s+(\d{1,2})\s+al\s+\d{1,2}\s+de\s+(\w+)(?:\s+de\s+(\d{4}))?',
+            r'entre\s+el\s+(\d{1,2})\s+y\s+\d{1,2}\s+de\s+(\w+)(?:\s+de\s+(\d{4}))?',
+        ]
+
+        for pattern in range_patterns:
+            match = re.search(pattern, text_lower, re.IGNORECASE)
+            if match:
+                # Reconstruct date string from captured groups: "20 de marzo de 2025"
+                day = match.group(1)
+                month = match.group(2)
+                year = match.group(3) if len(match.groups()) >= 3 and match.group(3) else None
+
+                date_str = f"{day} de {month}"
+                if year:
+                    date_str += f" de {year}"
+
+                parsed = dateparser.parse(date_str, languages=['es'], settings={
+                    'PREFER_DATES_FROM': 'future',
+                    'RELATIVE_BASE': now,
+                })
+
+                if parsed:
+                    if not parsed.tzinfo:
+                        parsed = timezone.make_aware(parsed)
+
+                    if parsed > now - timedelta(days=30):
+                        time_str = self.extract_event_time(text)
+                        if time_str:
+                            hour, minute = map(int, time_str.split(':'))
+                            parsed = parsed.replace(hour=hour, minute=minute)
+                        return parsed
+
+        # Standard date patterns
         date_patterns = [
             # Weekday + date: "sábado 15 de marzo", "viernes 20 de abril de 2025"
             r'(?:lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\s+(\d{1,2}\s+de\s+\w+(?:\s+de\s+\d{4})?)',
@@ -382,10 +423,6 @@ class FeatureExtractor:
             # Standard: "el próximo 15 de marzo", "el 15 de marzo de 2025"
             r'el\s+pr[oó]ximo\s+(\d{1,2}\s+de\s+\w+(?:\s+de\s+\d{4})?)',
             r'el\s+(\d{1,2}\s+de\s+\w+(?:\s+de\s+\d{4})?)',
-
-            # Ranges: "del 15 al 20 de marzo", "entre el 15 y 20 de marzo"
-            r'del\s+(\d{1,2})\s+al\s+\d{1,2}\s+de\s+(\w+)(?:\s+de\s+(\d{4}))?',
-            r'entre\s+el\s+(\d{1,2})\s+y\s+\d{1,2}\s+de\s+(\w+)(?:\s+de\s+(\d{4}))?',
 
             # Numeric: "15/03/2025", "15-03-2025", "2025-03-15"
             r'(\d{1,2})[/-](\d{1,2})[/-](\d{4})',
@@ -403,8 +440,6 @@ class FeatureExtractor:
             # Starting from: "a partir del 15 de marzo"
             r'a\s+partir\s+del?\s+(\d{1,2}\s+de\s+\w+(?:\s+de\s+\d{4})?)',
         ]
-
-        text_lower = text.lower()
 
         for pattern in date_patterns:
             match = re.search(pattern, text_lower, re.IGNORECASE)
@@ -445,8 +480,11 @@ class FeatureExtractor:
                 number_str = match.group(1).replace('.', '').replace(',', '')
                 try:
                     number = float(number_str)
-                    # If pattern mentions "mil" (thousand), multiply
-                    if 'mil' in match.group(0).lower():
+                    # Check for million vs thousand
+                    match_text = match.group(0).lower()
+                    if 'millón' in match_text or 'millon' in match_text:
+                        number *= 1000000
+                    elif 'mil' in match_text:
                         number *= 1000
                     return int(number)
                 except ValueError:
