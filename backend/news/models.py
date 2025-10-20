@@ -597,9 +597,8 @@ class NewsArticle(models.Model):
         default=0.0,
         verbose_name='Puntuación de sentimiento (-1 a 1)'
     )
-    
+
     # Processing status
-    is_processed = models.BooleanField(default=False, verbose_name='Procesado por ML')
     processing_error = models.TextField(blank=True, verbose_name='Error de procesamiento')
 
     # ML Feature Extraction fields (Phase 3 - task-4)
@@ -704,6 +703,19 @@ class NewsArticle(models.Model):
         help_text='0.0-1.0: Qué tan urgente es actuar sobre esta noticia'
     )
 
+    # Colombian relevance fields
+    colombian_involvement = models.BooleanField(
+        default=False,
+        verbose_name='Involucra a Colombia',
+        help_text='True si el evento involucra a Colombia o colombianos (deportes, cultura, etc.)'
+    )
+    event_country = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='País del evento',
+        help_text='País donde ocurre físicamente el evento'
+    )
+
     # Feature extraction metadata
     features_extracted = models.BooleanField(
         default=False,
@@ -720,6 +732,11 @@ class NewsArticle(models.Model):
         verbose_name='Confianza de extracción',
         help_text='0.0-1.0: Nivel de confianza en las features extraídas'
     )
+    feature_completeness_score = models.FloatField(
+        default=0.0,
+        verbose_name='Completitud de extracción de features',
+        help_text='0.0-1.0: Porcentaje de campos ML extraídos vs total esperado'
+    )
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
@@ -733,7 +750,6 @@ class NewsArticle(models.Model):
             models.Index(fields=['published_date']),
             models.Index(fields=['event_type']),
             models.Index(fields=['business_relevance_score']),
-            models.Index(fields=['is_processed']),
         ]
 
     def __str__(self):
@@ -829,10 +845,7 @@ class SocialMediaPost(models.Model):
         default=0.0,
         verbose_name='Puntuación de sentimiento'
     )
-    
-    # Processing status
-    is_processed = models.BooleanField(default=False, verbose_name='Procesado')
-    
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -315,10 +315,10 @@ class NewsSourceAdmin(admin.ModelAdmin):
 class NewsArticleAdmin(admin.ModelAdmin):
     list_display = [
         'title', 'source', 'published_date', 'crawl_section', 'event_type',
-        'business_relevance_score', 'is_processed'
+        'business_relevance_score'
     ]
     list_filter = [
-        'source', 'event_type', 'is_processed', 'crawl_section',
+        'source', 'event_type', 'crawl_section',
         'published_date', 'business_relevance_score'
     ]
     search_fields = ['title', 'content', 'author', 'crawl_section']
@@ -341,7 +341,7 @@ class NewsArticleAdmin(admin.ModelAdmin):
             )
         }),
         ('Estado', {
-            'fields': ('is_processed', 'processing_error', 'created_at', 'updated_at')
+            'fields': ('processing_error', 'created_at', 'updated_at')
         }),
     )
 
@@ -392,9 +392,9 @@ class CrawlHistoryAdmin(admin.ModelAdmin):
 class SocialMediaPostAdmin(admin.ModelAdmin):
     list_display = [
         'platform', 'account_name', 'posted_date',
-        'business_relevance_score', 'is_processed'
+        'business_relevance_score'
     ]
-    list_filter = ['platform', 'is_processed', 'posted_date']
+    list_filter = ['platform', 'posted_date']
     search_fields = ['account_name', 'text_content']
     readonly_fields = ['created_at', 'updated_at']
     date_hierarchy = 'posted_date'

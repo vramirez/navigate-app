@@ -87,7 +87,8 @@
     "highPriority": "High Priority",
     "implemented": "Implemented",
     "recentNews": "Recent News",
-    "quickActions": "Quick Actions"
+    "quickActions": "Quick Actions",
+    "aiDetailsButton": "AI Details"
   },
   "news": {
     "title": "Relevant News",
@@ -180,6 +181,12 @@
       "zonas-riesgo": "Risk Zones",
       "operativos-policiales": "Police Operations"
     }
+  },
+  "articleDetail": {
+    "relevanceScore": "Relevance to Your Business",
+    "relevanceScoreDesc": "How relevant this article is specifically to YOUR business type and location",
+    "suitabilityScore": "ML Filter Score (Technical)",
+    "suitabilityScoreDesc": "Internal ML system filter to pre-classify articles before personalized analysis"
   },
   "mockScenarios": {
     "marathon": {

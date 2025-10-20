@@ -61,13 +61,16 @@ class NewsArticleSerializer(serializers.ModelSerializer):
             'event_start_datetime', 'event_end_datetime', 'event_duration_hours',
             'expected_attendance', 'event_scale', 'business_suitability_score',
             'urgency_score', 'features_extracted', 'feature_extraction_date',
-            'feature_extraction_confidence',
+            'feature_extraction_confidence', 'feature_completeness_score',
+            # Geographic relevance fields (task-13)
+            'event_country', 'colombian_involvement',
             # Other fields
             'extracted_keywords', 'entities', 'sentiment_score',
-            'is_processed', 'processing_error', 'created_at', 'updated_at'
+            'processing_error', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at', 'features_extracted',
-                           'feature_extraction_date', 'feature_extraction_confidence']
+                           'feature_extraction_date', 'feature_extraction_confidence',
+                           'feature_completeness_score']
 
 
 class SocialMediaPostSerializer(serializers.ModelSerializer):
@@ -77,7 +80,7 @@ class SocialMediaPostSerializer(serializers.ModelSerializer):
             'id', 'platform', 'post_id', 'author_username', 'content',
             'published_date', 'engagement_metrics', 'location_tags',
             'business_relevance_score', 'extracted_keywords',
-            'sentiment_score', 'is_processed', 'processed_at', 'created_at'
+            'sentiment_score', 'processed_at', 'created_at'
         ]
         read_only_fields = ['created_at', 'processed_at']
 
