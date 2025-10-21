@@ -29,7 +29,7 @@ MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if docker compose -f docker/docker-compose.dev.yml exec ollama curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+    if docker compose -f docker/docker-compose.dev.yml exec -T ollama ollama list > /dev/null 2>&1; then
         echo "✓ Ollama is ready"
         break
     fi
