@@ -31,7 +31,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     ports:
-      - "11434:11434"
+      - "11435:11434"  # Use port 11435 to avoid conflict with host Ollama
     volumes:
       - ollama_data:/root/.ollama
     environment:

@@ -66,6 +66,7 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 - This only needs to be run once after first starting the services
 - LLM extraction is optional - the system works fine with spaCy-only extraction
 - If Ollama is unavailable, articles will be processed with spaCy only
+- Docker Ollama runs on port **11435** (to avoid conflict with host Ollama on 11434)
 
 **Script Safety Features:** All scripts include directory validation, confirmation prompts, status checking, and detailed logging.
 
@@ -93,7 +94,7 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 
 The following environment variables control LLM extraction behavior (configured in `docker-compose.dev.yml`):
 
-- `OLLAMA_HOST`: Ollama service URL (default: `http://ollama:11434`)
+- `OLLAMA_HOST`: Ollama service URL (default: `http://ollama:11434` - internal Docker network)
 - `LLM_MODEL_NAME`: Model to use (default: `llama3.2:1b`)
 - `LLM_TIMEOUT_SECONDS`: Request timeout (default: `30`)
 - `LLM_EXTRACTION_ENABLED`: Enable/disable LLM extraction (default: `True`)
