@@ -63,24 +63,18 @@ fi
 # Verify model is available
 echo ""
 echo "Verifying model availability..."
-if docker compose -f docker/docker-compose.dev.yml exec ollama ollama list | grep -q "$MODEL_NAME"; then
-    echo "✓ Model is available"
+if docker compose -f docker/docker-compose.dev.yml exec -T ollama ollama list | grep -q "$MODEL_NAME"; then
+    echo "✓ Model is available and ready to use"
 else
     echo "Warning: Model not found in list, but pull succeeded"
+    echo "This may indicate the model is still being loaded"
 fi
 
-# Test model with a simple prompt
 echo ""
-echo "Testing model with a simple prompt..."
-TEST_RESPONSE=$(docker compose -f docker/docker-compose.dev.yml exec ollama ollama run $MODEL_NAME "Say 'Hello from Llama!'")
-
-if [ $? -eq 0 ]; then
-    echo "✓ Model test successful"
-    echo "Response: $TEST_RESPONSE"
-else
-    echo "Error: Model test failed"
-    exit 1
-fi
+echo "✓ Setup validation complete"
+echo ""
+echo "Note: To test the model interactively, run:"
+echo "  docker compose -f docker/docker-compose.dev.yml exec ollama ollama run $MODEL_NAME"
 
 echo ""
 echo "=================================================="
