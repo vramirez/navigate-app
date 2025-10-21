@@ -15,7 +15,7 @@ echo "Model: $MODEL_NAME"
 echo ""
 
 # Check if Ollama container is running
-if ! docker compose -f docker/docker-compose.dev.yml ps ollama | grep -q "running"; then
+if ! docker compose -f docker/docker-compose.dev.yml ps ollama | grep -q "Up"; then
     echo "Error: Ollama service is not running"
     echo "Please start services with: ./scripts/start-server.sh"
     exit 1
