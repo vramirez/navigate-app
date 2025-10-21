@@ -180,7 +180,8 @@ JSON Response:"""
                         data['event_date'],
                         settings={'TIMEZONE': 'America/Bogota', 'RETURN_AS_TIMEZONE_AWARE': True}
                     )
-                    data['event_date'] = parsed_date
+                    # Convert to ISO format string for JSON serialization
+                    data['event_date'] = parsed_date.isoformat() if parsed_date else None
                 except Exception as e:
                     logger.warning(f"Failed to parse event_date: {e}")
                     data['event_date'] = None
