@@ -80,7 +80,7 @@ test/
 backups/
 
 # Claude configuration
-CLAUDE.md
+#CLAUDE.md
 
 # Logs
 *.log
