@@ -90,3 +90,25 @@ Add Ollama container with Llama 3.2 1B model to run LLM-based feature extraction
 - Need to start Docker services and run `setup-ollama.sh`
 - Need to process sample articles and verify LLM extraction works
 - Need to compare extraction quality between spaCy and LLM
+
+### 2025-10-22 - Bug Fixes and Merge to Main
+
+**Issues Fixed:**
+- Fixed port conflict: Changed Docker Ollama port from 11434 to 11435
+- Fixed service checks in `setup-ollama.sh` (grep "Up" instead of "running")
+- Fixed health check to use "ollama list" instead of curl
+- Fixed hanging wait loop by adding -T flag to exec commands
+- Removed interactive "ollama run" test that was freezing
+- Fixed spaCy model installation (uncommented in Dockerfiles, upgraded to medium model)
+- Fixed JSON serialization error: Convert datetime to ISO format string in llm_extractor.py:184
+
+**Testing Status:**
+- Successfully tested with `process_articles --reprocess` on 699 articles
+- LLM extraction confirmed working (slow on CPU ~120s per article)
+- Both spaCy and LLM extractions storing correctly in database
+
+**Merge Complete:**
+- All 9 commits from task-9.6-ollama-llm-integration merged to main
+- Changes pushed to origin/main (commit d3c86b4)
+- Feature branch ready for cleanup
+- Task status: Review (ready for human validation)
