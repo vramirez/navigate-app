@@ -95,7 +95,7 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 The following environment variables control LLM extraction behavior (configured in `docker-compose.dev.yml`):
 
 - `OLLAMA_HOST`: Ollama service URL (default: `http://ollama:11434` - internal Docker network)
-- `LLM_MODEL_NAME`: Model to use (default: `llama3.2:1b`)
+- `LLM_MODEL_NAME`: Model to use (default: `llama3.2:3b`)
 - `LLM_TIMEOUT_SECONDS`: Request timeout (default: `30`)
 - `LLM_EXTRACTION_ENABLED`: Enable/disable LLM extraction (default: `True`)
 
@@ -141,7 +141,7 @@ OLLAMA_MODEL=llama3.2:3b ./scripts/setup-ollama.sh
 | Model | Size | Speed | Quality | Best For |
 |-------|------|-------|---------|----------|
 | `qwen2.5:0.5b` | 397 MB | ⚡⚡⚡ | ⭐⭐ | Low-resource environments |
-| `llama3.2:1b` | 1.3 GB | ⚡⚡ | ⭐⭐⭐ | Default - Good balance |
+| `llama3.2:3b` | 1.3 GB | ⚡⚡ | ⭐⭐⭐ | Default - Good balance |
 | `llama3.2:3b` | 2.0 GB | ⚡⚡ | ⭐⭐⭐⭐ | Better accuracy |
 | `mistral:7b` | 4.1 GB | ⚡ | ⭐⭐⭐⭐⭐ | High quality extraction |
 | `llama3.1:8b` | 4.7 GB | ⚡ | ⭐⭐⭐⭐⭐ | Best quality |
@@ -155,7 +155,7 @@ OLLAMA_MODEL=llama3.2:3b ./scripts/setup-ollama.sh
 docker compose -f docker/docker-compose.dev.yml exec ollama ollama list
 
 # Test LLM with a simple prompt
-docker compose -f docker/docker-compose.dev.yml exec ollama ollama run llama3.2:1b "Hola"
+docker compose -f docker/docker-compose.dev.yml exec ollama ollama run llama3.2:3b "Hola"
 
 # Process articles with LLM extraction (via Django shell or management command)
 docker compose -f docker/docker-compose.dev.yml exec backend python manage.py process_articles --limit 5

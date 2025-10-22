@@ -6,7 +6,7 @@
 set -e
 
 # Model configuration (can be overridden via environment variable)
-MODEL_NAME="${OLLAMA_MODEL:-llama3.2:1b}"
+MODEL_NAME="${OLLAMA_MODEL:-llama3.2:3b}"
 
 echo "=================================================="
 echo "Setting up Ollama LLM Service"
