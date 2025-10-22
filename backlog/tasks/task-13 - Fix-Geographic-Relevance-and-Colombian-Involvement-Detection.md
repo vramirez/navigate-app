@@ -1,7 +1,7 @@
 ---
 id: task-13
 title: Fix Geographic Relevance and Colombian Involvement Detection
-status: Review
+status: Done
 priority: high
 assignee: @claude
 labels: ml-engine, bug-fix, feature

@@ -1,10 +1,11 @@
 ---
 id: task-9.2
 title: 'Improve article UX: clickable links and clean category names'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-13 21:45'
+completed_date: '2025-10-13'
 labels:
   - phase-3
   - frontend

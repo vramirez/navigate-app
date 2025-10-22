@@ -1,12 +1,13 @@
 ---
 id: task-12
 title: Create Article Detail Page with ML Features Visualization
-status: In Progress
+status: Review
 assignee:
   - '@claude'
 reporter: '@victor'
 created_date: '2025-10-16 15:27'
-updated_date: '2025-10-16 18:45'
+updated_date: '2025-10-18'
+completed_date: '2025-10-18'
 labels:
   - frontend
   - phase-3

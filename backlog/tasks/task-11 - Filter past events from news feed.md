@@ -1,11 +1,12 @@
 ---
 id: task-11
 title: Filter past events from news feed
-status: Review
+status: Done
 assignee:
   - '@claude'
 reporter: '@victor'
 createdDate: '2025-10-13 14:30'
+completedDate: '2025-10-13'
 labels:
   - frontend
   - backend

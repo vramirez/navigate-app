@@ -1,7 +1,7 @@
 ---
 id: task-4
 title: Integrate real news data with ML recommendation pipeline
-status: Review
+status: Done
 assignee:
   - '@claude'
 reporter: '@victor'

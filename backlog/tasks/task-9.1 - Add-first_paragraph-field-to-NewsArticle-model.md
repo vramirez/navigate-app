@@ -1,10 +1,11 @@
 ---
 id: task-9.1
 title: Add first_paragraph field to NewsArticle model
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-13 21:25'
+completed_date: '2025-10-13'
 labels:
   - phase-3
   - backend

@@ -1,11 +1,12 @@
 ---
 id: task-1
 title: Update frontend Dashboard with real news data
-status: Review
+status: Done
 assignee:
   - '@claude'
 reporter: '@victor'
 createdDate: '2025-10-05 15:00'
+completedDate: '2025-10-13'
 labels:
   - frontend
   - phase-3

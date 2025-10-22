@@ -3,10 +3,11 @@ id: task-9.3
 title: >-
   Fix ML misclassification: Add politics/international event types and improve
   filtering
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-13 21:57'
+completed_date: '2025-10-13'
 labels:
   - phase-3
   - ml-engine
