@@ -78,7 +78,7 @@ ARTICLE CONTENT:
 Extract the following information and respond ONLY with valid JSON (no additional text):
 
 {{
-    "event_type": "sports_match|marathon|concert|festival|conference|exposition|food_event|cultural|nightlife|politics|international|conflict|crime|other",
+    "event_type": "REQUIRED - Choose ONE: sports_match, marathon, concert, festival, conference, exposition, food_event, cultural, nightlife, politics, international, conflict, crime, other. For sports news use 'sports_match'. NEVER leave empty.",
     "event_subtype": "specific subtype if applicable (e.g., 'soccer', 'rock concert', '10k race')",
     "city": "primary Colombian city where event takes place (e.g., 'Medellín', 'Bogotá', 'Cali')",
     "neighborhood": "neighborhood or district if mentioned (e.g., 'El Poblado', 'Laureles')",
@@ -172,6 +172,11 @@ JSON Response:"""
 
             json_str = response_text[start_idx:end_idx + 1]
             data = json.loads(json_str)
+
+            # Validate required fields - reject if event_type is missing or generic
+            if not data.get('event_type') or data.get('event_type') == 'other':
+                logger.warning("LLM failed to classify event type properly, rejecting result")
+                return None
 
             # Parse event_date string to datetime if present
             if data.get('event_date'):

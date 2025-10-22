@@ -914,6 +914,28 @@ class MLOrchestrator:
             article.extracted_keywords = features.get('keywords', [])
             article.entities = features.get('entities', [])
 
+            # Map event_type to category and subcategory
+            category_map = {
+                'sports_match': ('deportes', 'futbol'),
+                'marathon': ('deportes', 'atletismo'),
+                'concert': ('entretenimiento', 'musica'),
+                'festival': ('eventos', 'festival'),
+                'conference': ('negocios', 'conferencia'),
+                'exposition': ('cultura', 'exposicion'),
+                'food_event': ('gastronomia', 'festival-gastronomico'),
+                'cultural': ('cultura', 'evento-cultural'),
+                'nightlife': ('entretenimiento', 'vida-nocturna'),
+                'politics': ('comunidad', 'politica'),
+                'international': ('comunidad', 'internacional'),
+                'conflict': ('comunidad', 'seguridad'),
+                'crime': ('comunidad', 'seguridad'),
+            }
+
+            if article.event_type_detected:
+                category, subcategory = category_map.get(article.event_type_detected, ('comunidad', 'otros'))
+                article.category = category
+                article.subcategory = subcategory
+
             # Step 2: Calculate business suitability
             # Use primary business (business_id=1) for general suitability scoring
             primary_business = Business.objects.filter(id=1).first()
@@ -925,6 +947,9 @@ class MLOrchestrator:
             article.features_extracted = True
             article.feature_extraction_date = timezone.now()
             article.feature_extraction_confidence = 0.8  # Default confidence
+
+            # Clear old processing errors on successful extraction
+            article.processing_error = ''
 
             # Calculate feature completeness score
             from news.utils import calculate_feature_completeness
