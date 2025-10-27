@@ -13,6 +13,7 @@
 9. Add detailed implementation notes to task's Progress Log section
 10. High-level explanation at each step of what changes were made
 11. Every temporary script or input and its output, needed for temporary testing some functonality or feature must be placed in test/ folder
+12. Any parameter should be stored and modified in the database thru GUI.
 
 ## Task Management with Backlog.md
 
