@@ -348,16 +348,24 @@ class NewsArticleAdmin(admin.ModelAdmin):
 @admin.register(CrawlHistory)
 class CrawlHistoryAdmin(admin.ModelAdmin):
     list_display = [
-        'source', 'crawl_date', 'status', 'crawl_type',
+        'source_display', 'crawl_date', 'status', 'crawl_type',
         'articles_found', 'articles_saved', 'crawl_duration_display'
     ]
     list_filter = ['status', 'crawl_type', 'crawl_date', 'source']
     search_fields = ['source__name', 'error_message']
     readonly_fields = [
-        'source', 'crawl_date', 'status', 'crawl_type',
+        'source_display', 'crawl_date', 'status', 'crawl_type',
         'articles_found', 'articles_saved', 'error_message', 'crawl_duration'
     ]
     date_hierarchy = 'crawl_date'
+
+    def source_display(self, obj):
+        """Display source name or 'Deleted Source' if null"""
+        if obj.source:
+            return obj.source.name
+        return format_html('<em style="color: gray;">Fuente eliminada</em>')
+
+    source_display.short_description = 'Fuente'
 
     def has_add_permission(self, request):
         """Prevent manual creation of crawl history"""
@@ -376,8 +384,8 @@ class CrawlHistoryAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Información del Crawl (Solo Lectura - Registro de Auditoría)', {
-            'fields': ('source', 'crawl_date', 'status', 'crawl_type'),
-            'description': 'Este es un registro de auditoría automático. No se puede modificar ni eliminar.'
+            'fields': ('source_display', 'crawl_date', 'status', 'crawl_type'),
+            'description': 'Este es un registro de auditoría automático. No se puede modificar ni eliminar. Las fuentes eliminadas se muestran como "Fuente eliminada".'
         }),
         ('Resultados', {
             'fields': ('articles_found', 'articles_saved', 'crawl_duration')
