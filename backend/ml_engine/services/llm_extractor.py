@@ -80,6 +80,8 @@ Extract the following information and respond ONLY with valid JSON (no additiona
 {{
     "event_type": "REQUIRED - Choose ONE: sports_match, marathon, concert, festival, conference, exposition, food_event, cultural, nightlife, politics, international, conflict, crime, other. For sports news use 'sports_match'. NEVER leave empty.",
     "event_subtype": "specific subtype if applicable (e.g., 'soccer', 'rock concert', '10k race')",
+    "sport_type": "for sports events, the sport name: soccer, cycling, combat_sports, basketball, baseball, formula_1, tennis, volleyball, american_football, motorsports, rugby, golf, ice_hockey, winter_sports, or null if not sports",
+    "competition_level": "for sports events, competition name/tier: world_cup, copa_america, champions_league, libertadores, tour_de_france, giro_italia, vuelta_espana, primera_division, segunda_division, national_team_qualifier, olympics, or null. Look for: mundial, copa, torneo, liga, clasificatorias, eliminatorias, final, campeonato",
     "city": "primary Colombian city where event takes place (e.g., 'Medellín', 'Bogotá', 'Cali')",
     "neighborhood": "neighborhood or district if mentioned (e.g., 'El Poblado', 'Laureles')",
     "venue": "specific venue name if mentioned (e.g., 'Estadio Atanasio Girardot', 'Teatro Pablo Tobón')",
@@ -105,6 +107,9 @@ IMPORTANT RULES:
 5. attendance must be a number or null
 6. Keywords should be relevant Spanish terms from the article
 7. If the article is about politics, international affairs, crime, or conflicts, mark event_type accordingly
+8. sport_type examples: soccer (fútbol), cycling (ciclismo), combat_sports (boxeo/mma), basketball (baloncesto), baseball (béisbol), formula_1, tennis, volleyball
+9. competition_level examples: world_cup (mundial), copa_america, champions_league (liga de campeones), libertadores, tour_de_france, giro_italia, vuelta_espana, primera_division, segunda_division, national_team_qualifier (eliminatorias), olympics (olímpicos)
+10. Detect competition tier from context: "final", "semifinal", "clasificatorias", "mundial", "copa", "torneo", "liga"
 
 JSON Response:"""
 
@@ -250,6 +255,8 @@ JSON Response:"""
             return {
                 'event_type': extracted_data.get('event_type', ''),
                 'event_subtype': extracted_data.get('event_subtype', ''),
+                'sport_type': extracted_data.get('sport_type', ''),  # task-9.7
+                'competition_level': extracted_data.get('competition_level', ''),  # task-9.7
                 'city': extracted_data.get('city', ''),
                 'neighborhood': extracted_data.get('neighborhood', ''),
                 'venue': extracted_data.get('venue', ''),
