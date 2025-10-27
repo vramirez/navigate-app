@@ -716,6 +716,43 @@ class NewsArticle(models.Model):
         help_text='País donde ocurre físicamente el evento'
     )
 
+    # Broadcastability fields (task-9.7 - TV broadcast detection)
+    sport_type = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Tipo de deporte',
+        help_text='Deporte detectado: soccer, cycling, combat_sports, basketball, etc.'
+    )
+    competition_level = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Nivel de competición',
+        help_text='Nivel de competición: world_cup, champions_league, tour_de_france, etc.'
+    )
+    broadcastability_score = models.FloatField(
+        default=0.0,
+        verbose_name='Puntuación de broadcastability',
+        help_text='0.0-1.0: Probabilidad de que el evento sea transmitido en TV y atraiga público a pubs'
+    )
+    hype_score = models.FloatField(
+        default=0.0,
+        verbose_name='Puntuación de hype',
+        help_text='0.0-1.0: Nivel de emoción/expectativa del evento (finales, clásicos, históricos)'
+    )
+    is_broadcastable = models.BooleanField(
+        default=False,
+        verbose_name='Es transmisible',
+        help_text='True si broadcastability_score >= umbral mínimo (relevante para negocios con TVs)'
+    )
+
+    # Gastronomy fields (task-9.8 - Food event classification)
+    cuisine_types = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Tipos de cocina',
+        help_text='Lista de tipos de cocina detectados: ["italian", "japanese", "fusion"]'
+    )
+
     # Feature extraction metadata
     features_extracted = models.BooleanField(
         default=False,
