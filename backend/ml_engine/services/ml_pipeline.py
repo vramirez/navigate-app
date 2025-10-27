@@ -20,6 +20,7 @@ from recommendations.models import Recommendation
 from .nlp_processor import NLPProcessor
 from .feature_extractor import FeatureExtractor
 from .llm_extractor import LLMExtractor
+from .broadcastability_calculator import BroadcastabilityCalculator
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +127,20 @@ class PreFilter:
                 score = 0.4  # Unknown event type gets medium-low score
 
         # NEW: Penalize international events without Colombian involvement
+        # BUT check broadcastability first (task-9.7)
         if article.event_country and article.event_country != 'Colombia':
             if not article.colombian_involvement:
-                return 0.0  # Completely irrelevant
+                # Check if it's a broadcastable TV event before rejecting
+                if article.is_broadcastable and business and business.has_tv_screens:
+                    # High broadcast appeal + business has TVs = RELEVANT
+                    base_score = article.broadcastability_score * 0.75
+                    logger.info(
+                        f"International broadcastable event: {article.title[:50]}... "
+                        f"Score: {base_score:.2f} (broadcastability: {article.broadcastability_score:.2f})"
+                    )
+                    return base_score
+                else:
+                    return 0.0  # Not broadcastable or no TV screens
 
             # Has Colombian involvement but is international
             # Reduce score significantly
@@ -801,6 +813,7 @@ class MLOrchestrator:
         self.nlp = NLPProcessor()
         self.feature_extractor = FeatureExtractor()
         self.llm_extractor = LLMExtractor()
+        self.broadcastability_calc = BroadcastabilityCalculator()  # task-9.7
         self.prefilter = PreFilter()
         self.geo_matcher = GeographicMatcher()
         self.business_matcher = BusinessMatcher()
@@ -914,6 +927,10 @@ class MLOrchestrator:
             article.extracted_keywords = features.get('keywords', [])
             article.entities = features.get('entities', [])
 
+            # task-9.7: Extract sport_type and competition_level (initially from spaCy)
+            article.sport_type = features.get('sport_type', '') or ''
+            article.competition_level = features.get('competition_level', '') or ''
+
             # Map event_type to category and subcategory
             category_map = {
                 'sports_match': ('deportes', 'futbol'),
@@ -987,6 +1004,40 @@ class MLOrchestrator:
                     f"Article {article.id} below suitability threshold ({article.business_suitability_score:.2f}), "
                     "skipping LLM extraction"
                 )
+
+            # Step 2.6: Calculate broadcastability for sports events (task-9.7)
+            # Update sport_type and competition_level from LLM if available
+            if llm_features:
+                if llm_features.get('sport_type'):
+                    article.sport_type = llm_features['sport_type']
+                if llm_features.get('competition_level'):
+                    article.competition_level = llm_features['competition_level']
+
+            # Calculate broadcastability score
+            try:
+                broadcast_result = self.broadcastability_calc.calculate(article)
+                article.broadcastability_score = broadcast_result['broadcastability_score']
+                article.hype_score = broadcast_result['hype_score']
+                article.is_broadcastable = broadcast_result['is_broadcastable']
+
+                # Update sport_type and competition_level from calculator if detected
+                if broadcast_result.get('sport_type'):
+                    article.sport_type = broadcast_result['sport_type']
+                if broadcast_result.get('competition_level'):
+                    article.competition_level = broadcast_result['competition_level']
+
+                if article.is_broadcastable:
+                    logger.info(
+                        f"Article {article.id} is broadcastable! "
+                        f"Score: {article.broadcastability_score:.2f} "
+                        f"(sport: {article.sport_type}, competition: {article.competition_level})"
+                    )
+            except Exception as e:
+                logger.error(f"Broadcastability calculation failed for article {article.id}: {e}", exc_info=True)
+                # Set defaults on error
+                article.broadcastability_score = 0.0
+                article.hype_score = 0.0
+                article.is_broadcastable = False
 
             if save:
                 article.save()
