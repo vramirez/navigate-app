@@ -79,21 +79,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'navigate.wsgi.application'
 
 # Database
+# Use PostgreSQL from DATABASE_URL environment variable
+# Falls back to SQLite if DATABASE_URL not set (for local testing without Docker)
 DATABASES = {
-    'default': {
+    'default': env.db() if env('DATABASE_URL', default=None) else {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
         'OPTIONS': {
-            'timeout': 20,  # Wait up to 20 seconds for database lock
+            'timeout': 20,
         }
     }
 }
-
-# Use PostgreSQL in production
-if not DEBUG:
-    DATABASES = {
-        'default': env.db()
-    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

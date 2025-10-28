@@ -105,8 +105,8 @@ export const getDashboardArticles = async (options = {}) => {
     console.log('newsApi: Fetching dashboard articles with options:', options)
     const response = await apiClient.get('/api/news/articles/', {
       params: {
-        days_ago: options.daysAgo ?? 14, // Last 14 days (reduced from 30)
-        min_relevance: options.minRelevance ?? 0.6, // Minimum relevance 0.6 (increased from 0.0)
+        days_ago: options.daysAgo ?? 30, // Last 30 days
+        min_relevance: options.minRelevance ?? 0.3, // Minimum relevance 0.3
         source_country: options.sourceCountry ?? 'CO', // Only Colombian sources
         exclude_past_events: options.excludePastEvents ?? true, // Exclude past events by default
         limit: 20, // Top 20 articles
