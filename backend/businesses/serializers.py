@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Business, BusinessKeywords, AdminUser
+from .models import Business, BusinessKeywords, AdminUser, BusinessType
+
+
+class BusinessTypeSerializer(serializers.ModelSerializer):
+    """Serializer for BusinessType"""
+    class Meta:
+        model = BusinessType
+        fields = ['code', 'display_name', 'display_name_es', 'icon']
 
 
 class BusinessKeywordsSerializer(serializers.ModelSerializer):
@@ -11,11 +18,12 @@ class BusinessKeywordsSerializer(serializers.ModelSerializer):
 class BusinessSerializer(serializers.ModelSerializer):
     keywords = BusinessKeywordsSerializer(many=True, read_only=True)
     recommendations_count = serializers.SerializerMethodField()
-    
+    business_type_details = BusinessTypeSerializer(source='business_type', read_only=True)
+
     class Meta:
         model = Business
         fields = [
-            'id', 'owner', 'name', 'business_type', 'city', 'description',
+            'id', 'owner', 'name', 'business_type', 'business_type_details', 'city', 'description',
             'address', 'phone', 'email', 'website', 'target_audience',
             'capacity', 'staff_count', 'email_notifications',
             'recommendation_frequency',

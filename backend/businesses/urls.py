@@ -8,4 +8,5 @@ router.register(r'', views.BusinessViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('keywords/', views.BusinessKeywordsListCreateView.as_view(), name='business-keywords'),
+    path('auth/profile/', views.user_profile, name='user-profile'),
 ]
