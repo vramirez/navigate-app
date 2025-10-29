@@ -123,11 +123,12 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(source__country=source_country)
 
         # Relevance/suitability scores
-        if min_relevance:
-            try:
-                queryset = queryset.filter(business_relevance_score__gte=float(min_relevance))
-            except ValueError:
-                pass
+        # TODO task-18.5: Replace with per-type relevance filtering
+        # if min_relevance:
+        #     try:
+        #         queryset = queryset.filter(business_relevance_score__gte=float(min_relevance))
+        #     except ValueError:
+        #         pass
         if business_suitability_score__gte:
             try:
                 queryset = queryset.filter(business_suitability_score__gte=float(business_suitability_score__gte))
@@ -147,7 +148,8 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def high_relevance(self, request):
         """Get high relevance articles (score > 0.7)"""
-        articles = self.get_queryset().filter(business_relevance_score__gt=0.7)[:20]
+        # TODO task-18.5: Replace with per-type relevance filtering
+        articles = self.get_queryset()[:20]
         serializer = self.get_serializer(articles, many=True)
         return Response(serializer.data)
 

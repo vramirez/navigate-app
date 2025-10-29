@@ -54,7 +54,7 @@ class NewsArticleSerializer(serializers.ModelSerializer):
             'id', 'source', 'source_name', 'source_country', 'title', 'content', 'first_paragraph', 'url',
             'author', 'published_date', 'section', 'crawl_section',
             # Legacy fields (Phase 1)
-            'event_type', 'event_date', 'event_location', 'business_relevance_score',
+            'event_type', 'event_date', 'event_location',
             # ML extracted fields (Phase 3 - task-4)
             'event_type_detected', 'event_subtype', 'primary_city', 'neighborhood',
             'venue_name', 'venue_address', 'latitude', 'longitude',
@@ -79,8 +79,7 @@ class SocialMediaPostSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'platform', 'post_id', 'author_username', 'content',
             'published_date', 'engagement_metrics', 'location_tags',
-            'business_relevance_score', 'extracted_keywords',
-            'sentiment_score', 'processed_at', 'created_at'
+            'extracted_keywords', 'sentiment_score', 'processed_at', 'created_at'
         ]
         read_only_fields = ['created_at', 'processed_at']
 

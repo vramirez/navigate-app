@@ -578,12 +578,7 @@ class NewsArticle(models.Model):
         blank=True,
         verbose_name='Ubicación del evento'
     )
-    business_relevance_score = models.FloatField(
-        default=-1.0,
-        verbose_name='Puntuación de relevancia comercial',
-        help_text='-1.0 = no procesado, 0.0+ = procesado con score de relevancia'
-    )
-    
+
     # Keywords and entities extracted
     extracted_keywords = models.JSONField(
         default=list,
@@ -812,7 +807,6 @@ class NewsArticle(models.Model):
         indexes = [
             models.Index(fields=['published_date']),
             models.Index(fields=['event_type']),
-            models.Index(fields=['business_relevance_score']),
         ]
 
     def __str__(self):
@@ -895,10 +889,6 @@ class SocialMediaPost(models.Model):
     posted_date = models.DateTimeField(verbose_name='Fecha de publicación')
     
     # ML processing results
-    business_relevance_score = models.FloatField(
-        default=0.0,
-        verbose_name='Puntuación de relevancia comercial'
-    )
     extracted_keywords = models.JSONField(
         default=list,
         blank=True,
@@ -948,6 +938,84 @@ class ManualNewsEntry(models.Model):
         verbose_name = 'Noticia manual'
         verbose_name_plural = 'Noticias manuales'
         ordering = ['-created_at']
-        
+
     def __str__(self):
         return f"Manual: {self.title}"
+
+
+class ArticleBusinessTypeRelevance(models.Model):
+    """
+    Stores relevance score per article per business type
+    Enables personalized article filtering based on user's business type
+    """
+
+    article = models.ForeignKey(
+        NewsArticle,
+        on_delete=models.CASCADE,
+        related_name='type_relevance_scores',
+        verbose_name='Artículo'
+    )
+    business_type = models.ForeignKey(
+        'businesses.BusinessType',
+        on_delete=models.CASCADE,
+        related_name='article_scores',
+        verbose_name='Tipo de negocio'
+    )
+
+    # Main relevance score
+    relevance_score = models.FloatField(
+        verbose_name='Puntuación de relevancia',
+        help_text='0.0-1.0: Qué tan relevante es este artículo para este tipo de negocio',
+        db_index=True
+    )
+
+    # Component scores (for debugging/transparency)
+    suitability_component = models.FloatField(
+        default=0.0,
+        verbose_name='Componente de idoneidad',
+        help_text='Contribución del business_suitability_score'
+    )
+    keyword_component = models.FloatField(
+        default=0.0,
+        verbose_name='Componente de palabras clave',
+        help_text='Contribución del matching de keywords'
+    )
+    event_scale_component = models.FloatField(
+        default=0.0,
+        verbose_name='Componente de escala',
+        help_text='Contribución de la escala del evento'
+    )
+    neighborhood_component = models.FloatField(
+        default=0.0,
+        verbose_name='Componente de proximidad',
+        help_text='Contribución de cercanía geográfica'
+    )
+
+    # Metadata for transparency
+    matching_keywords = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Palabras clave que coincidieron',
+        help_text='Lista de keywords que generaron matching para este tipo'
+    )
+
+    # Timestamp
+    calculated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Calculado el',
+        db_index=True
+    )
+
+    class Meta:
+        verbose_name = 'Relevancia artículo-tipo de negocio'
+        verbose_name_plural = 'Relevancias artículo-tipo de negocio'
+        unique_together = ['article', 'business_type']
+        indexes = [
+            models.Index(fields=['business_type', 'relevance_score']),
+            models.Index(fields=['article', 'business_type']),
+            models.Index(fields=['-relevance_score']),
+        ]
+        ordering = ['-relevance_score']
+
+    def __str__(self):
+        return f"{self.article.title[:50]} → {self.business_type.code}: {self.relevance_score:.2f}"

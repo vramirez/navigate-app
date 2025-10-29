@@ -315,11 +315,11 @@ class NewsSourceAdmin(admin.ModelAdmin):
 class NewsArticleAdmin(admin.ModelAdmin):
     list_display = [
         'title', 'source', 'published_date', 'crawl_section', 'event_type',
-        'business_relevance_score'
+        'business_suitability_score'
     ]
     list_filter = [
         'source', 'event_type', 'crawl_section',
-        'published_date', 'business_relevance_score'
+        'published_date', 'business_suitability_score'
     ]
     search_fields = ['title', 'content', 'author', 'crawl_section']
     readonly_fields = [
@@ -336,7 +336,7 @@ class NewsArticleAdmin(admin.ModelAdmin):
         ('Procesamiento ML (Editable)', {
             'fields': (
                 'event_type', 'event_date', 'event_location',
-                'business_relevance_score', 'sentiment_score',
+                'business_suitability_score', 'sentiment_score',
                 'extracted_keywords', 'entities'
             )
         }),
@@ -399,8 +399,7 @@ class CrawlHistoryAdmin(admin.ModelAdmin):
 @admin.register(SocialMediaPost)
 class SocialMediaPostAdmin(admin.ModelAdmin):
     list_display = [
-        'platform', 'account_name', 'posted_date',
-        'business_relevance_score'
+        'platform', 'account_name', 'posted_date'
     ]
     list_filter = ['platform', 'posted_date']
     search_fields = ['account_name', 'text_content']

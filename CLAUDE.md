@@ -103,8 +103,14 @@ backlog cleanup                                 # Moves old completed tasks to a
 
 **Epic/Parent Task Hierarchy:**
 
-Phase epics: task-7 (✅), task-8 (✅), task-9 (🔄), task-10 (📋)
+Phase epics: task-7 (✅), task-8 (✅), task-9 (🔄), task-10 (📋), task-18 (🔄)
 To link subtask: Add `parent: task-9` to YAML frontmatter or use `-p task-9` flag in create command.
+
+**Current Major Refactor (task-18):**
+- Per-business-type relevance scoring system in progress
+- Database schema complete (Phase 1 ✅)
+- Backend code updates in progress (Phase 2-4)
+- See "Per-Business-Type Relevance System" section below for details
 
 ## Quick Reference
 
@@ -127,3 +133,134 @@ navigate-app/
 **Project Status:** See [README.md](README.md) for current phase status and roadmap.
 
 **Phase 2 Crawler System:** Complete. See [README.md](README.md) for architecture, API endpoints, and usage instructions.
+
+## Per-Business-Type Relevance System (task-18)
+
+**Status**: Database ✅ Complete | Backend ⚠️ In Progress | Frontend ⚠️ Pending
+
+### Overview
+
+Major architectural refactor to support **per-business-type relevance scoring**. Each article now gets 4 separate relevance scores (pub, restaurant, coffee_shop, bookstore) instead of one global score. Users see articles filtered and sorted by their business type's specific relevance score.
+
+### Key Changes
+
+**Database Schema (Phase 1 - COMPLETE ✅)**
+- `BusinessType` model: Dynamic business type configuration with customizable weights
+  - 4 initial types: pub, restaurant, coffee_shop, bookstore
+  - Configurable relevance calculation weights (suitability, keyword, event_scale, neighborhood)
+  - Configurable thresholds per type
+- `ArticleBusinessTypeRelevance` model: Stores per-type relevance scores
+  - Each article has 4 separate relevance_score entries (one per business type)
+  - Component scores stored for transparency (suitability, keyword, event, neighborhood)
+- `Business.business_type`: Migrated from CharField to FK(BusinessType)
+- `BusinessTypeKeyword.business_type`: Migrated from CharField to FK(BusinessType)
+
+**Backend Code (Phase 2-3 - IN PROGRESS ⚠️)**
+- Subtasks 18.1-18.10 update ML pipeline, API, serializers, and frontend
+- See task-18 file for complete subtask breakdown
+
+**Critical Migration Notes:**
+- Old field: `NewsArticle.business_relevance_score` (single global score) - DEPRECATED, to be removed
+- New system: `ArticleBusinessTypeRelevance` model (4 scores per article)
+- **DO NOT run `process_articles` until tasks 18.1-18.3 are complete!**
+- Backend code still uses old single-score system until Phase 2 complete
+
+### Migrations Applied
+
+```
+businesses/0006_businesstype.py
+businesses/0007_seed_business_types.py
+businesses/0008_migrate_business_type_to_fk_step1.py
+businesses/0009_complete_fk_migration.py
+news/0015_articlebusinesstyperelevance.py
+```
+
+### Implementation Phases
+
+**Phase 1: Database Schema** ✅
+- All migrations run successfully
+- Data integrity verified
+- 4 business types seeded
+- 83 business type keywords migrated
+
+**Phase 2: Backend Code Updates** (tasks 18.1-18.7)
+- Remove old business_relevance_score field
+- Add calculate_relevance_for_type to BusinessMatcher
+- Update MLOrchestrator for per-type scoring
+- Create user profile API endpoint
+- Update NewsArticleViewSet to filter by business_type
+- Create BusinessType ViewSet and serializers
+- Update NewsArticleSerializer for per-type scores
+
+**Phase 3: Frontend Updates** (tasks 18.8-18.10)
+- Create AuthContext for user/business context
+- Update newsApi.js to pass business_type parameter
+- Update Dashboard to use business type context
+
+**Phase 4: Data & Testing** (tasks 18.11-18.15)
+- Seed business type keywords
+- Reprocess all articles with new ML pipeline
+- Update admin interfaces
+- Test with different business types
+- Documentation and cleanup
+
+### How It Works
+
+**Before (Old System):**
+```python
+article.business_relevance_score = 0.75  # Single global score
+```
+
+**After (New System):**
+```python
+# Each article has 4 separate scores
+ArticleBusinessTypeRelevance(article=article, business_type=pub, relevance_score=0.85)
+ArticleBusinessTypeRelevance(article=article, business_type=restaurant, relevance_score=0.45)
+ArticleBusinessTypeRelevance(article=article, business_type=coffee_shop, relevance_score=0.60)
+ArticleBusinessTypeRelevance(article=article, business_type=bookstore, relevance_score=0.25)
+
+# Users only see articles filtered by THEIR business type
+pub_owner.sees_articles_with(business_type='pub', min_score=0.5)  # Shows article (0.85)
+bookstore_owner.sees_articles_with(business_type='bookstore', min_score=0.5)  # Hides article (0.25)
+```
+
+### Business Type Configuration
+
+Each BusinessType has customizable parameters:
+
+**Relevance Weights** (sum to 1.0):
+- `suitability_weight` (0.3): Weight of business_suitability_score
+- `keyword_weight` (0.2): Weight of keyword matching
+- `event_scale_weight` (0.2): Weight of event scale/attendance
+- `neighborhood_weight` (0.3): Weight of geographic proximity
+
+**Thresholds**:
+- `min_relevance_threshold` (0.5): Minimum score to show article to user
+- `min_suitability_threshold` (0.5): Minimum business_suitability_score to process article
+
+These parameters are stored in the database and configurable via admin GUI (no code changes needed).
+
+### Backward Compatibility Warning
+
+**IMPORTANT**: Until Phase 2 is complete, the system is in a transitional state:
+- Database supports per-type scoring
+- Backend code still uses old `business_relevance_score` field
+- Running ML pipeline will fail or produce incorrect results
+- Wait for tasks 18.1-18.3 completion before processing articles
+
+### Files to Update (Phase 2-4)
+
+**Backend:**
+- `backend/news/models.py` - Remove business_relevance_score field
+- `backend/ml_engine/business_matcher.py` - Add calculate_relevance_for_type
+- `backend/ml_engine/orchestrator.py` - Update process_article logic
+- `backend/businesses/api/views.py` - Add user profile endpoint
+- `backend/news/api/views.py` - Update filtering by business_type
+- `backend/news/api/serializers.py` - Include per-type scores
+
+**Frontend:**
+- `frontend/src/contexts/AuthContext.jsx` - Add business type context
+- `frontend/src/services/newsApi.js` - Pass business_type parameter
+- `frontend/src/pages/Dashboard.jsx` - Use business type filtering
+
+See individual task files (task-18.1 through task-18.15) for detailed implementation code.

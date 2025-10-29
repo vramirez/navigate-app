@@ -1069,9 +1069,10 @@ class MLOrchestrator:
                 if relevance > 0.4:
                     matching_businesses.append((business, relevance))
 
+            # TODO task-18.3: Replace with per-type relevance scoring
             # Set article's business_relevance_score to max relevance found
             # This represents how relevant this article is to the MOST interested business
-            article.business_relevance_score = max_relevance
+            # article.business_relevance_score = max_relevance
 
             if save:
                 article.save()
@@ -1090,7 +1091,7 @@ class MLOrchestrator:
                 'processed': True,
                 'features_extracted': True,
                 'suitability_score': article.business_suitability_score,
-                'business_relevance_score': article.business_relevance_score,
+                # 'business_relevance_score': article.business_relevance_score,  # TODO task-18.3
                 'matching_businesses': len(matching_businesses),
                 'recommendations_created': recommendations_created,
                 'features': features
