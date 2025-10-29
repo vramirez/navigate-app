@@ -1130,33 +1130,62 @@ class MLOrchestrator:
                     'features_extracted': True
                 }
 
-            # Step 4: Find matching businesses and calculate max relevance
-            matching_businesses = []
-            max_relevance = 0.0
+            # Step 4: Calculate relevance for each business type
+            from businesses.models import BusinessType
+            from news.models import ArticleBusinessTypeRelevance
 
-            for business in Business.objects.filter(is_active=True):
-                if not self.geo_matcher.is_relevant(article, business):
+            # Delete old scores (for reprocessing)
+            ArticleBusinessTypeRelevance.objects.filter(article=article).delete()
+
+            business_types = BusinessType.objects.filter(is_active=True)
+            type_scores = {}
+
+            for biz_type in business_types:
+                # Check suitability threshold
+                if article.business_suitability_score < biz_type.min_suitability_threshold:
                     continue
 
-                relevance = self.business_matcher.calculate_relevance(article, business)
+                # Calculate relevance
+                result = self.business_matcher.calculate_relevance_for_type(article, biz_type)
 
-                # Track highest relevance score across all businesses
-                if relevance > max_relevance:
-                    max_relevance = relevance
+                # Store in database
+                ArticleBusinessTypeRelevance.objects.create(
+                    article=article,
+                    business_type=biz_type,
+                    relevance_score=result['relevance_score'],
+                    suitability_component=result['suitability_component'],
+                    keyword_component=result['keyword_component'],
+                    event_scale_component=result['event_scale_component'],
+                    neighborhood_component=result['neighborhood_component'],
+                    matching_keywords=result['matching_keywords']
+                )
 
-                # Lower threshold to 0.4 to catch more potential matches
-                if relevance > 0.4:
+                type_scores[biz_type.code] = result['relevance_score']
+
+            # Step 5: Generate recommendations for matching businesses
+            matching_businesses = []
+
+            for biz_type_code, relevance in type_scores.items():
+                biz_type = BusinessType.objects.get(code=biz_type_code)
+
+                # Only if relevance >= threshold
+                if relevance < biz_type.min_relevance_threshold:
+                    continue
+
+                # Find businesses of this type
+                businesses = Business.objects.filter(
+                    business_type=biz_type,
+                    is_active=True
+                )
+
+                for business in businesses:
+                    # Geographic filter
+                    if not self.geo_matcher.is_relevant(article, business):
+                        continue
+
                     matching_businesses.append((business, relevance))
 
-            # TODO task-18.3: Replace with per-type relevance scoring
-            # Set article's business_relevance_score to max relevance found
-            # This represents how relevant this article is to the MOST interested business
-            # article.business_relevance_score = max_relevance
-
-            if save:
-                article.save()
-
-            # Step 5: Generate recommendations
+            # Step 6: Generate recommendations
             recommendations_created = 0
             for business, relevance in matching_businesses:
                 recs = self.rec_generator.generate(article, business, relevance)
@@ -1170,7 +1199,7 @@ class MLOrchestrator:
                 'processed': True,
                 'features_extracted': True,
                 'suitability_score': article.business_suitability_score,
-                # 'business_relevance_score': article.business_relevance_score,  # TODO task-18.3
+                'type_scores': type_scores,
                 'matching_businesses': len(matching_businesses),
                 'recommendations_created': recommendations_created,
                 'features': features
