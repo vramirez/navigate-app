@@ -1,10 +1,11 @@
 ---
 id: task-18.5
 title: 'Update NewsArticleViewSet to Filter by business_type'
-status: To Do
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
+completed_date: '2025-10-29'
 labels:
   - backend
   - api
@@ -12,6 +13,7 @@ dependencies: [task-18.3]
 parent: task-18
 priority: high
 estimated_hours: 3
+actual_hours: 3
 ---
 
 ## Description
@@ -206,16 +208,16 @@ print(f'Without filter: {len(response.json())} articles')
 
 ## Acceptance Criteria
 
-- [ ] Endpoint requires business_type parameter (returns empty without it)
-- [ ] Filters articles by ArticleBusinessTypeRelevance scores
-- [ ] Uses business type's min_relevance_threshold by default
-- [ ] Allows overriding threshold with min_relevance parameter
-- [ ] Event filter uses 7-day window (not "future only")
-- [ ] Articles ordered by user_relevance DESC, then published_date DESC
-- [ ] user_relevance field included in queryset annotation
-- [ ] days_ago parameter removed/ignored
-- [ ] Returns only distinct articles (no duplicates)
-- [ ] Invalid business_type returns empty queryset
+- [x] Endpoint requires business_type parameter (returns empty without it)
+- [x] Filters articles by ArticleBusinessTypeRelevance scores
+- [x] Uses business type's min_relevance_threshold by default
+- [x] Allows overriding threshold with min_relevance parameter
+- [x] Event filter uses 7-day window (not "future only")
+- [x] Articles ordered by user_relevance DESC, then published_date DESC
+- [x] user_relevance field included in queryset annotation
+- [x] days_ago parameter removed/ignored
+- [x] Returns only distinct articles (no duplicates)
+- [x] Invalid business_type returns empty queryset
 
 ## Notes
 
@@ -223,3 +225,28 @@ print(f'Without filter: {len(response.json())} articles')
 - Frontend must always pass business_type parameter
 - user_relevance annotation used by serializer (task-18.7)
 - Performance: Consider adding index on (business_type, relevance_score) in ArticleBusinessTypeRelevance
+
+## Progress Log
+
+### 2025-10-29: Completed ✅
+
+**Implementation:**
+- Replaced entire get_queryset() method in [backend/news/views.py:50-105](backend/news/views.py#L50-L105)
+- Added business_type parameter validation (returns empty if missing)
+- Implemented filtering via ArticleBusinessTypeRelevance model
+- Added user_relevance annotation for sorting and display
+- Changed event filter from "future only" to 7-day window
+- Removed all legacy filtering parameters
+
+**Testing:**
+- ✓ Test 1: business_type parameter correctly required
+- ✓ Test 2: Threshold filtering (0.3, 0.5, 0.7) works correctly
+- ✓ Test 3: Event date filtering works correctly
+
+**Results:**
+- Currently 0 articles at default threshold (0.5)
+- 1 article found at lower threshold (0.3) - Article ID 3
+- Expected behavior - only 1 article has been reprocessed with per-type scores
+- Full reprocessing will happen in task-18.12
+
+**Commit:** 93324d6 - task-18.5: Update NewsArticleViewSet to filter by business_type
