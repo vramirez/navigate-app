@@ -2,7 +2,7 @@
  * Base API Client Configuration
  *
  * Centralizes axios configuration for all API calls
- * TODO Phase 4: Add authentication token interceptors
+ * Includes authentication token management and 401 handling
  */
 
 import axios from 'axios'
@@ -20,14 +20,14 @@ const apiClient = axios.create({
   },
 })
 
-// Request interceptor - can add auth tokens here later
+// Request interceptor - add auth tokens
 apiClient.interceptors.request.use(
   (config) => {
-    // TODO Phase 4: Add authentication token
-    // const token = localStorage.getItem('auth_token')
-    // if (token) {
-    //   config.headers.Authorization = `Token ${token}`
-    // }
+    // Add authentication token if available
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      config.headers.Authorization = `Token ${token}`
+    }
     return config
   },
   (error) => {
@@ -47,8 +47,11 @@ apiClient.interceptors.response.use(
 
       switch (status) {
         case 401:
-          // Unauthorized - redirect to login in Phase 4
-          console.error('Unauthorized access')
+          // Unauthorized - clear invalid token
+          console.error('Unauthorized access - token expired or invalid')
+          localStorage.removeItem('auth_token')
+          // AuthContext will handle the state update
+          window.dispatchEvent(new Event('auth:logout'))
           break
         case 403:
           // Forbidden

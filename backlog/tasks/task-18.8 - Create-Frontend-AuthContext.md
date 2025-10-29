@@ -1,10 +1,11 @@
 ---
 id: task-18.8
 title: 'Create Frontend AuthContext with Business Type'
-status: To Do
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
+completed_date: '2025-10-29 12:00'
 labels:
   - frontend
   - react
@@ -309,3 +310,70 @@ console.log('Business Type:', __authContext.businessTypeCode);
 - Token authentication system must be in place
 - Future: Add token refresh logic
 - Future: Persist business type selection if user has multiple businesses
+
+## Progress Log
+
+### 2025-10-29 12:00 - Task Complete ✓
+
+**Implementation Summary:**
+
+1. **Created AuthContext.jsx** (frontend/src/contexts/AuthContext.jsx):
+   - React Context with AuthProvider component
+   - State management for user, business, businessTypeCode
+   - Loading and error states
+   - Auto-loads profile on mount if token exists
+   - Exports useAuth hook for easy access
+
+2. **Key methods implemented**:
+   - `loadUserProfile()` - Fetches from /api/businesses/auth/profile/
+   - `login(token)` - Stores token, loads profile
+   - `logout()` - Clears token and state
+   - `reloadProfile()` - Refreshes profile data
+   - Global logout event listener for 401 handling
+
+3. **Updated api.js** (frontend/src/services/api.js):
+   - Request interceptor: Adds Authorization header with token
+   - Response interceptor: Handles 401 by clearing token and dispatching logout event
+   - Removed Phase 4 TODO comments
+
+4. **Updated main.jsx** (frontend/src/main.jsx):
+   - Imported AuthProvider
+   - Wrapped <App /> with <AuthProvider>
+   - Provider is inside BrowserRouter, outside App
+
+**Files Created/Modified:**
+- frontend/src/contexts/AuthContext.jsx (created)
+- frontend/src/services/api.js (modified)
+- frontend/src/main.jsx (modified)
+
+**Context provides:**
+```javascript
+{
+  user: { id, username, email, first_name, last_name },
+  business: { id, name, business_type, business_type_details, ... },
+  businessTypeCode: 'pub',  // Quick access
+  isAuthenticated: boolean,
+  loading: boolean,
+  error: string | null,
+  login: (token) => Promise,
+  logout: () => void,
+  reloadProfile: () => Promise
+}
+```
+
+**Usage in components:**
+```javascript
+import { useAuth } from '../contexts/AuthContext'
+
+const { user, business, businessTypeCode, isAuthenticated, loading } = useAuth()
+```
+
+**Auth Flow:**
+1. On mount: Check localStorage for token → Load profile
+2. On login: Store token → Load profile → Update state
+3. On 401: Clear token → Dispatch event → AuthContext updates state
+4. On logout: Clear token → Clear state
+
+**Testing:** Manual browser testing required (cannot automate in backend environment).
+
+Ready for human review and testing.
