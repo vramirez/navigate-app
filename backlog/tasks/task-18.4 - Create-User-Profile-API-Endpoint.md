@@ -184,9 +184,16 @@ curl -H "Authorization: Token $TOKEN" http://localhost:8000/api/businesses/auth/
 
 ### 2025-10-29 - Tests Added
 - Comprehensive test suite created in `backend/businesses/tests/test_profile_api.py`
-- 6 tests covering all scenarios (authenticated, unauthenticated, no business, inactive business, etc.)
-- Commit: 8bef42d (on branch task-18.4-user-profile-endpoint)
-- Tests ready to merge to main
+- 6 tests covering all scenarios:
+  - test_authenticated_user_with_business ✅
+  - test_authenticated_user_without_business ✅
+  - test_unauthenticated_request ✅
+  - test_inactive_business_not_returned ✅
+  - test_multiple_businesses_returns_active_one ✅
+  - test_response_structure ✅
+- All 6 tests pass successfully
+- Commit: 8bef42d
+- Tests merged to main
 
 ### 2025-10-29 - Task Marked Complete
 - All acceptance criteria verified and checked
