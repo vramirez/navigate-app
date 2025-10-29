@@ -1,10 +1,11 @@
 ---
 id: task-18.7
 title: 'Update NewsArticleSerializer to Include Per-Type Scores'
-status: To Do
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
+completed_date: '2025-10-29 11:15'
 labels:
   - backend
   - api
@@ -241,3 +242,74 @@ for article in data[:5]:
 - Requires task-18.5 (user_relevance annotation in queryset)
 - type_scores optional to avoid performance impact
 - Future: Cache type_scores in article for faster access
+
+## Progress Log
+
+### 2025-10-29 11:15 - Task Complete ✓
+
+**Implementation Summary:**
+
+1. **Updated NewsArticleSerializer** (backend/news/serializers.py):
+   - Added `user_relevance` field (FloatField, read_only, comes from queryset annotation)
+   - Added `type_scores` field (SerializerMethodField, conditional)
+   - Added fields to Meta.fields list under "Per-type relevance (task-18)"
+   - Added user_relevance to read_only_fields
+
+2. **Implemented get_type_scores method**:
+   - Checks for ?include_type_scores=true query parameter
+   - Returns None if parameter not present (excludes from response)
+   - Fetches all ArticleBusinessTypeRelevance records for article
+   - Returns dict with structure: `{type_code: {relevance_score, components, keywords}}`
+   - Handles both DRF Request and Django WSGIRequest objects
+   - Uses select_related('business_type') to avoid N+1 queries
+
+3. **Created test script**: backend/test_news_article_serializer.py
+   - Tests user_relevance field presence
+   - Tests type_scores conditional inclusion
+   - Verifies correct structure of type_scores
+
+**Test Results:**
+- ✓ Without include_type_scores: type_scores is None (excluded)
+- ✓ With include_type_scores=true: Returns all 4 business types
+- ✓ Each type shows: relevance_score, suitability, keyword, event_scale, neighborhood, matching_keywords
+- ✓ Example scores:
+  - pub: 0.320 (suitability=0.180, keyword=0.090, keywords=['ron', 'liga', 'música'])
+  - bookstore: 0.280 (suitability=0.180, keyword=0.050, keywords=['firma', 'taller'])
+
+**Files Modified:**
+- backend/news/serializers.py
+- backend/test_news_article_serializer.py (created)
+
+**API Response Structure:**
+
+Without parameter:
+```json
+{
+  "id": 123,
+  "title": "...",
+  "user_relevance": 0.85,  // From queryset annotation
+  "type_scores": null      // Excluded
+}
+```
+
+With ?include_type_scores=true:
+```json
+{
+  "id": 123,
+  "title": "...",
+  "user_relevance": 0.85,
+  "type_scores": {
+    "pub": {
+      "relevance_score": 0.85,
+      "suitability": 0.30,
+      "keyword": 0.20,
+      "event_scale": 0.20,
+      "neighborhood": 0.15,
+      "matching_keywords": ["cerveza", "fútbol"]
+    },
+    ...
+  }
+}
+```
+
+Ready for human review and merge.
