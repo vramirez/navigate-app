@@ -48,94 +48,61 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'content', 'extracted_keywords']
     
     def get_queryset(self):
-        queryset = NewsArticle.objects.select_related('source')
+        """
+        Filter articles by business type relevance
 
-        # Filter parameters
-        city = self.request.query_params.get('city')
-        primary_city = self.request.query_params.get('primary_city')  # ML extracted city
-        event_type = self.request.query_params.get('event_type')  # Legacy field
-        event_type_detected = self.request.query_params.get('event_type_detected')  # ML field
-        days_ago = self.request.query_params.get('days_ago')
-        min_relevance = self.request.query_params.get('min_relevance')  # Legacy field
-        business_suitability_score__gte = self.request.query_params.get('business_suitability_score__gte')  # ML field
-        features_extracted = self.request.query_params.get('features_extracted')
-        event_scale = self.request.query_params.get('event_scale')
+        Query params:
+            - business_type (required): Filter by business type code (pub, restaurant, etc.)
+            - min_relevance (optional): Override default threshold for business type
+            - exclude_past_events (optional, default true): Filter out events older than 7 days
+        """
+        from businesses.models import BusinessType
+        from django.db.models import F
 
-        # Temporal filtering (Phase 3 - task-11)
-        exclude_past_events = self.request.query_params.get('exclude_past_events')
-        event_start_date_gte = self.request.query_params.get('event_start_date_gte')
-        event_start_date_lte = self.request.query_params.get('event_start_date_lte')
+        # Get business_type parameter (required)
+        business_type_code = self.request.query_params.get('business_type')
 
-        # Geographic filtering (Phase 3 - task-11)
-        source_country = self.request.query_params.get('source_country')
+        if not business_type_code:
+            # Return empty queryset if no business type specified
+            return NewsArticle.objects.none()
 
-        # City filtering (legacy - source city or event location)
-        if city:
+        # Get BusinessType object to access thresholds
+        try:
+            business_type = BusinessType.objects.get(code=business_type_code, is_active=True)
+        except BusinessType.DoesNotExist:
+            return NewsArticle.objects.none()
+
+        # Get min_relevance (use business type default if not provided)
+        min_relevance = self.request.query_params.get('min_relevance')
+        if min_relevance:
+            min_relevance = float(min_relevance)
+        else:
+            min_relevance = business_type.min_relevance_threshold
+
+        # Base queryset: articles with relevance scores for this business type
+        queryset = NewsArticle.objects.filter(
+            type_relevance_scores__business_type=business_type,
+            type_relevance_scores__relevance_score__gte=min_relevance
+        ).distinct()
+
+        # Annotate with user's relevance score for sorting/display
+        queryset = queryset.annotate(
+            user_relevance=F('type_relevance_scores__relevance_score')
+        )
+
+        # Event date filter: only events within last 7 days OR upcoming events
+        exclude_past = self.request.query_params.get('exclude_past_events', 'true')
+        if exclude_past.lower() == 'true':
+            seven_days_ago = timezone.now() - timedelta(days=7)
             queryset = queryset.filter(
-                Q(source__city=city) | Q(event_location__icontains=city)
+                Q(event_start_datetime__gte=seven_days_ago) |
+                Q(event_start_datetime__isnull=True)
             )
 
-        # ML-extracted city filtering (Phase 3 - task-4)
-        if primary_city:
-            queryset = queryset.filter(primary_city=primary_city)
+        # Order by relevance (highest first), then by published date
+        queryset = queryset.order_by('-user_relevance', '-published_date')
 
-        # Event type filtering
-        if event_type:
-            queryset = queryset.filter(event_type=event_type)
-        if event_type_detected:
-            queryset = queryset.filter(event_type_detected=event_type_detected)
-
-        # ML features
-        if features_extracted is not None:
-            queryset = queryset.filter(features_extracted=features_extracted.lower() == 'true')
-        if event_scale:
-            queryset = queryset.filter(event_scale=event_scale)
-
-        # Date filtering (published date)
-        if days_ago:
-            try:
-                date_threshold = timezone.now() - timedelta(days=int(days_ago))
-                queryset = queryset.filter(published_date__gte=date_threshold)
-            except ValueError:
-                pass
-
-        # Temporal filtering (event date) - task-11
-        # Exclude past events (but keep articles without event dates)
-        if exclude_past_events and exclude_past_events.lower() == 'true':
-            queryset = queryset.filter(
-                Q(event_start_datetime__gte=timezone.now()) | Q(event_start_datetime__isnull=True)
-            )
-
-        # Event date range filtering
-        if event_start_date_gte:
-            try:
-                queryset = queryset.filter(event_start_datetime__gte=event_start_date_gte)
-            except ValueError:
-                pass
-        if event_start_date_lte:
-            try:
-                queryset = queryset.filter(event_start_datetime__lte=event_start_date_lte)
-            except ValueError:
-                pass
-
-        # Geographic filtering by source country - task-11
-        if source_country:
-            queryset = queryset.filter(source__country=source_country)
-
-        # Relevance/suitability scores
-        # TODO task-18.5: Replace with per-type relevance filtering
-        # if min_relevance:
-        #     try:
-        #         queryset = queryset.filter(business_relevance_score__gte=float(min_relevance))
-        #     except ValueError:
-        #         pass
-        if business_suitability_score__gte:
-            try:
-                queryset = queryset.filter(business_suitability_score__gte=float(business_suitability_score__gte))
-            except ValueError:
-                pass
-
-        return queryset.order_by('-published_date')
+        return queryset
     
     @action(detail=False, methods=['get'])
     def recent(self, request):
