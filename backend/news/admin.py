@@ -5,7 +5,8 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
-from .models import NewsSource, NewsArticle, SocialMediaPost, ManualNewsEntry, CrawlHistory
+from django.db.models import Count, Avg
+from .models import NewsSource, NewsArticle, SocialMediaPost, ManualNewsEntry, CrawlHistory, ArticleBusinessTypeRelevance
 from .services.crawler_orchestrator import CrawlerOrchestratorService
 
 # Configure admin site headers
@@ -311,22 +312,43 @@ class NewsSourceAdmin(admin.ModelAdmin):
 
         return redirect('admin:news_newssource_changelist')
 
+class ArticleBusinessTypeRelevanceInline(admin.TabularInline):
+    """Inline viewer for article type relevance scores"""
+    model = ArticleBusinessTypeRelevance
+    extra = 0
+    can_delete = False
+    readonly_fields = [
+        'business_type', 'relevance_score',
+        'suitability_component', 'keyword_component',
+        'event_scale_component', 'neighborhood_component',
+        'matching_keywords'
+    ]
+    fields = readonly_fields
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(NewsArticle)
 class NewsArticleAdmin(admin.ModelAdmin):
     list_display = [
-        'title', 'source', 'published_date', 'crawl_section', 'event_type',
-        'business_suitability_score'
+        'short_title', 'source', 'published_date',
+        'suitability_score_badge', 'type_scores_badge',
+        'event_type', 'crawl_section'
     ]
     list_filter = [
         'source', 'event_type', 'crawl_section',
-        'published_date', 'business_suitability_score'
+        'published_date', 'processing_status'
     ]
     search_fields = ['title', 'content', 'author', 'crawl_section']
     readonly_fields = [
         'source', 'title', 'content', 'first_paragraph', 'url', 'author', 'published_date',
-        'section', 'crawl_section', 'created_at', 'updated_at'
+        'section', 'crawl_section', 'created_at', 'updated_at', 'processing_status',
+        'business_suitability_score', 'type_scores_summary'
     ]
     date_hierarchy = 'published_date'
+
+    inlines = [ArticleBusinessTypeRelevanceInline]
 
     fieldsets = (
         ('Artículo (Datos del Crawler - Solo Lectura)', {
@@ -340,10 +362,127 @@ class NewsArticleAdmin(admin.ModelAdmin):
                 'extracted_keywords', 'entities'
             )
         }),
+        ('Per-Type Relevance Scores', {
+            'fields': ('type_scores_summary',),
+            'description': 'Calculated relevance scores for each business type'
+        }),
         ('Estado', {
-            'fields': ('processing_error', 'created_at', 'updated_at')
+            'fields': ('processing_status', 'processing_error', 'created_at', 'updated_at')
         }),
     )
+
+    def get_queryset(self, request):
+        """Annotate with type score stats"""
+        qs = super().get_queryset(request)
+        return qs.annotate(
+            _type_score_count=Count('type_relevance_scores', distinct=True),
+            _avg_type_score=Avg('type_relevance_scores__relevance_score')
+        )
+
+    def short_title(self, obj):
+        """Truncated title"""
+        return obj.title[:60] + '...' if len(obj.title) > 60 else obj.title
+    short_title.short_description = 'Title'
+
+    def suitability_score_badge(self, obj):
+        """Color-coded suitability score badge"""
+        score = obj.business_suitability_score
+
+        if score < 0:
+            color = 'gray'
+            text = 'Not processed'
+        elif score < 0.3:
+            color = 'red'
+            text = f'{score:.2f}'
+        elif score < 0.5:
+            color = 'orange'
+            text = f'{score:.2f}'
+        elif score < 0.7:
+            color = 'yellow'
+            text = f'{score:.2f}'
+        else:
+            color = 'green'
+            text = f'{score:.2f}'
+
+        return format_html(
+            '<span style="background: {}; color: white; padding: 3px 8px; border-radius: 3px;">{}</span>',
+            color, text
+        )
+    suitability_score_badge.short_description = 'Suitability'
+
+    def type_scores_badge(self, obj):
+        """Badge showing number of type scores and average"""
+        count = obj._type_score_count
+        avg = obj._avg_type_score or 0
+
+        if count == 0:
+            return format_html(
+                '<span style="background: gray; color: white; padding: 3px 8px; border-radius: 3px;">No scores</span>'
+            )
+
+        if avg < 0.5:
+            color = 'orange'
+        elif avg < 0.7:
+            color = 'yellow'
+        else:
+            color = 'green'
+
+        return format_html(
+            '<span style="background: {}; color: white; padding: 3px 8px; border-radius: 3px;">{} types (avg: {:.2f})</span>',
+            color, count, avg
+        )
+    type_scores_badge.short_description = 'Type Scores'
+
+    def type_scores_summary(self, obj):
+        """Summary of all type scores"""
+        scores = obj.type_relevance_scores.select_related('business_type').all()
+
+        if not scores:
+            return 'No type scores calculated yet'
+
+        html = '<table style="width: 100%; border-collapse: collapse;">'
+        html += '<tr><th>Type</th><th>Score</th><th>Keywords</th></tr>'
+
+        for score in scores:
+            html += f'<tr style="border-bottom: 1px solid #ddd;">'
+            html += f'<td><strong>{score.business_type.display_name}</strong></td>'
+            html += f'<td>{score.relevance_score:.2f}</td>'
+            html += f'<td>{", ".join(score.matching_keywords[:5])}</td>'
+            html += '</tr>'
+
+        html += '</table>'
+        return format_html(html)
+    type_scores_summary.short_description = 'Type Scores Summary'
+
+@admin.register(ArticleBusinessTypeRelevance)
+class ArticleBusinessTypeRelevanceAdmin(admin.ModelAdmin):
+    """Admin interface for ArticleBusinessTypeRelevance"""
+
+    list_display = [
+        'article_title', 'business_type', 'relevance_score',
+        'keyword_component', 'event_scale_component', 'created_at'
+    ]
+
+    list_filter = ['business_type', 'created_at']
+
+    search_fields = ['article__title']
+
+    readonly_fields = [
+        'article', 'business_type', 'relevance_score',
+        'suitability_component', 'keyword_component',
+        'event_scale_component', 'neighborhood_component',
+        'matching_keywords', 'created_at'
+    ]
+
+    def article_title(self, obj):
+        """Article title"""
+        return obj.article.title[:60] + '...' if len(obj.article.title) > 60 else obj.article.title
+    article_title.short_description = 'Article'
+
+    def has_add_permission(self, request):
+        """Prevent manual creation (auto-generated by ML)"""
+        return False
+
 
 @admin.register(CrawlHistory)
 class CrawlHistoryAdmin(admin.ModelAdmin):

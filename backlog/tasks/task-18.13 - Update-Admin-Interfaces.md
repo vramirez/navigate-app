@@ -1,7 +1,7 @@
 ---
 id: task-18.13
 title: 'Update Admin Interfaces for Business Types'
-status: To Do
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
@@ -429,3 +429,27 @@ class ArticleBusinessTypeRelevanceAdmin(admin.ModelAdmin):
 - Inline editors reduce clicks
 - Read-only fields prevent accidental modifications of ML-generated data
 - Future: Add actions for bulk reprocessing articles
+
+## Progress Log
+
+### 2025-10-29 - Implementation Complete
+
+**Status**: Admin interfaces updated and tested ✅
+
+**Work Completed**:
+
+1. **Updated `backend/businesses/admin.py`:**
+   - Added BusinessTypeKeywordInline for inline editing
+   - Created BusinessTypeAdmin with organized fieldsets, counts, inline editor
+   - Enhanced BusinessAdmin with geographic fields and better organization
+
+2. **Updated `backend/news/admin.py`:**
+   - Added ArticleBusinessTypeRelevanceInline
+   - Created ArticleBusinessTypeRelevanceAdmin (read-only)
+   - Enhanced NewsArticleAdmin with color-coded badges and type scores
+
+3. **Testing:**
+   - All admin interfaces load without errors ✅
+   - Models properly registered ✅
+
+**Acceptance Criteria:** All 12 criteria met ✅
