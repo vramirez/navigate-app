@@ -53,7 +53,7 @@ news/0015_articlebusinesstyperelevance.py
 - [ ] task-18.1: Remove business_relevance_score from NewsArticle
 - [ ] task-18.2: Add calculate_relevance_for_type to BusinessMatcher
 - [ ] task-18.3: Update MLOrchestrator.process_article for per-type scoring
-- [ ] task-18.4: Create user profile API endpoint
+- [x] task-18.4: Create user profile API endpoint
 - [ ] task-18.5: Update NewsArticleViewSet to filter by business_type
 - [ ] task-18.6: Create BusinessType ViewSet and serializers
 - [ ] task-18.7: Update NewsArticleSerializer for per-type scores
@@ -126,3 +126,13 @@ Created comprehensive task files for all 15 subtasks (18.1-18.15):
 - task-18.15: Documentation And Cleanup
 
 Next: Ready to begin implementation. Start with task-18.2 (add method) or task-18.1 (remove field)
+
+### 2025-10-29 - task-18.4 Complete ✅
+User profile API endpoint verified and test suite merged:
+- Endpoint `/api/businesses/auth/profile/` already implemented and merged to main (commit 018fa6c)
+- Comprehensive test suite with 6 tests created and merged (commit 8bef42d → 522569c)
+- All acceptance criteria verified as complete
+- Task file updated to Done status
+- Files: [businesses/views.py:73-110](backend/businesses/views.py#L73-L110), [businesses/serializers.py:6-44](backend/businesses/serializers.py#L6-L44), [businesses/urls.py:15](backend/businesses/urls.py#L15)
+- Tests: backend/businesses/tests/test_profile_api.py
+- Frontend can now fetch user's business type to filter articles appropriately
