@@ -312,6 +312,85 @@ class BusinessMatcher:
 
         return min(1.0, score)
 
+    def calculate_relevance_for_type(
+        self,
+        article: NewsArticle,
+        business_type: 'BusinessType'
+    ) -> Dict[str, Any]:
+        """
+        Calculate relevance score for a specific business type
+
+        Args:
+            article: NewsArticle with extracted features
+            business_type: BusinessType object (pub, restaurant, etc.)
+
+        Returns:
+            {
+                'relevance_score': float (0.0-1.0),
+                'suitability_component': float,
+                'keyword_component': float,
+                'event_scale_component': float,
+                'neighborhood_component': float,
+                'matching_keywords': list of str
+            }
+        """
+
+        # Get weights from BusinessType configuration
+        weights = {
+            'suitability': business_type.suitability_weight,      # default: 0.3
+            'keyword': business_type.keyword_weight,              # default: 0.2
+            'event_scale': business_type.event_scale_weight,      # default: 0.2
+            'neighborhood': business_type.neighborhood_weight      # default: 0.3
+        }
+
+        # Component 1: Base suitability
+        suitability_score = article.business_suitability_score * weights['suitability']
+
+        # Component 2: Type-specific keywords
+        type_keywords = business_type.keywords.filter(is_active=True)
+        keyword_score = 0.0
+        matching_keywords = []
+
+        article_text = f"{article.title} {article.content}".lower()
+
+        for kw_obj in type_keywords:
+            if kw_obj.keyword.lower() in article_text:
+                keyword_score += kw_obj.weight
+                matching_keywords.append(kw_obj.keyword)
+
+        # Cap and apply weight
+        keyword_score = min(keyword_score, 1.0) * weights['keyword']
+
+        # Component 3: Event scale bonus
+        scale_map = {
+            'massive': 1.0,
+            'large': 0.75,
+            'medium': 0.25,
+            'small': 0.0
+        }
+        scale_bonus = scale_map.get(article.event_scale, 0.0)
+        event_scale_score = scale_bonus * weights['event_scale']
+
+        # Component 4: Neighborhood (not applicable for type-level, always 0)
+        neighborhood_score = 0.0
+
+        # Calculate total relevance
+        relevance_score = min(1.0,
+            suitability_score +
+            keyword_score +
+            event_scale_score +
+            neighborhood_score
+        )
+
+        return {
+            'relevance_score': relevance_score,
+            'suitability_component': suitability_score,
+            'keyword_component': keyword_score,
+            'event_scale_component': event_scale_score,
+            'neighborhood_component': neighborhood_score,
+            'matching_keywords': matching_keywords
+        }
+
 
 class RecommendationGenerator:
     """Generate actionable recommendations from articles"""
