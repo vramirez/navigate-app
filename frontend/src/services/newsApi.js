@@ -91,33 +91,49 @@ export const getSources = async (params = {}) => {
 }
 
 /**
- * Fetch articles for Dashboard with optimal filters
- * Returns high-relevance, recent articles suitable for business recommendations
- * @param {Object} options - Additional filter options
- * @param {boolean} options.excludePastEvents - Exclude events that already happened (default: true)
- * @param {string} options.sourceCountry - Filter by source country code (default: 'CO')
- * @param {number} options.minRelevance - Minimum relevance score (default: 0.6)
- * @param {number} options.daysAgo - Number of days to look back (default: 14)
- * @returns {Promise<Array>} Filtered article list
+ * Fetch articles for Dashboard filtered by business type
+ * Returns articles with per-type relevance scoring
+ * @param {Object} options - Filter options
+ * @param {string} options.businessType - REQUIRED: Business type code (pub, restaurant, coffee_shop, bookstore)
+ * @param {number} [options.minRelevance] - Optional: Override business type default relevance threshold
+ * @param {boolean} [options.excludePastEvents=true] - Exclude events older than 7 days
+ * @param {boolean} [options.includeTypeScores=false] - Include relevance breakdown for all types
+ * @param {string} [options.sourceCountry='CO'] - Filter by source country code
+ * @param {number} [options.limit=20] - Maximum number of articles to return
+ * @returns {Promise<Array>} Filtered article list with user_relevance scores
  */
 export const getDashboardArticles = async (options = {}) => {
   try {
+    // Validate required parameter
+    if (!options.businessType) {
+      throw new Error('businessType is required for getDashboardArticles')
+    }
+
     console.log('newsApi: Fetching dashboard articles with options:', options)
-    const response = await apiClient.get('/api/news/articles/', {
-      params: {
-        days_ago: options.daysAgo ?? 30, // Last 30 days
-        min_relevance: options.minRelevance ?? 0.3, // Minimum relevance 0.3
-        source_country: options.sourceCountry ?? 'CO', // Only Colombian sources
-        exclude_past_events: options.excludePastEvents ?? true, // Exclude past events by default
-        limit: 20, // Top 20 articles
-        ...options,
-      },
-    })
+
+    const params = {
+      business_type: options.businessType,
+      exclude_past_events: options.excludePastEvents ?? true,
+      source_country: options.sourceCountry ?? 'CO',
+      limit: options.limit ?? 20,
+    }
+
+    // Optional parameters
+    if (options.minRelevance !== undefined) {
+      params.min_relevance = options.minRelevance
+    }
+
+    if (options.includeTypeScores) {
+      params.include_type_scores = 'true'
+    }
+
+    const response = await apiClient.get('/api/news/articles/', { params })
+
     console.log('newsApi: Response received:', {
       status: response.status,
       count: response.data.count,
       resultsLength: response.data.results?.length,
-      filters: response.config.params
+      filters: params
     })
     return response.data.results || response.data
   } catch (error) {
@@ -132,6 +148,38 @@ export const getDashboardArticles = async (options = {}) => {
   }
 }
 
+/**
+ * Fetch all available business types
+ * @param {boolean} [activeOnly=true] - Only return active business types
+ * @returns {Promise<Array>} Array of business types with metadata
+ */
+export const getBusinessTypes = async (activeOnly = true) => {
+  try {
+    const params = activeOnly ? { is_active: 'true' } : {}
+    const response = await apiClient.get('/api/businesses/business-types/', { params })
+    return response.data
+  } catch (error) {
+    console.error('Error fetching business types:', error)
+    throw error
+  }
+}
+
+/**
+ * Fetch statistics for a specific business type
+ * Returns distribution of article relevance scores for the type
+ * @param {string} businessTypeCode - Business type code (pub, restaurant, etc.)
+ * @returns {Promise<Object>} Statistics object with score distribution
+ */
+export const getBusinessTypeStatistics = async (businessTypeCode) => {
+  try {
+    const response = await apiClient.get(`/api/businesses/business-types/${businessTypeCode}/statistics/`)
+    return response.data
+  } catch (error) {
+    console.error(`Error fetching statistics for business type ${businessTypeCode}:`, error)
+    throw error
+  }
+}
+
 export default {
   getArticles,
   getRecentArticles,
@@ -139,4 +187,6 @@ export default {
   getArticleById,
   getSources,
   getDashboardArticles,
+  getBusinessTypes,
+  getBusinessTypeStatistics,
 }
