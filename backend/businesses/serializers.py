@@ -1,12 +1,29 @@
 from rest_framework import serializers
+from django.db.models import Count
 from .models import Business, BusinessKeywords, AdminUser, BusinessType
 
 
 class BusinessTypeSerializer(serializers.ModelSerializer):
-    """Serializer for BusinessType"""
+    """Basic serializer for BusinessType (lightweight)"""
     class Meta:
         model = BusinessType
         fields = ['code', 'display_name', 'display_name_es', 'icon']
+
+
+class DetailedBusinessTypeSerializer(serializers.ModelSerializer):
+    """Detailed serializer for BusinessType including weights, thresholds, and counts"""
+    business_count = serializers.IntegerField(read_only=True)
+    keyword_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = BusinessType
+        fields = [
+            'id', 'code', 'display_name', 'display_name_es', 'icon',
+            'suitability_weight', 'keyword_weight', 'event_scale_weight', 'neighborhood_weight',
+            'min_relevance_threshold', 'min_suitability_threshold',
+            'is_active', 'business_count', 'keyword_count', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
 
 
 class BusinessKeywordsSerializer(serializers.ModelSerializer):

@@ -1,10 +1,11 @@
 ---
 id: task-18.6
 title: 'Create BusinessType ViewSet and Serializers'
-status: To Do
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
+completed_date: '2025-10-29 10:45'
 labels:
   - backend
   - api
@@ -240,3 +241,62 @@ print(f'\\nStatistics: {response.json()}')
 - Statistics endpoint useful for admin dashboard
 - Keywords endpoint useful for debugging/reviewing type configuration
 - Future: Frontend admin panel to manage types and keywords
+
+## Progress Log
+
+### 2025-10-29 10:45 - Task Complete ✓
+
+**Implementation Summary:**
+
+1. **Created permissions.py** - IsAdminOrReadOnly permission class
+   - Public read access for all users (including anonymous)
+   - Admin-only write access (is_staff required)
+
+2. **Updated serializers.py**:
+   - BasicBusinessTypeSerializer already existed (lightweight)
+   - Added DetailedBusinessTypeSerializer with weights, thresholds, and counts
+
+3. **Updated views.py**:
+   - Added BusinessTypeViewSet with ModelViewSet
+   - Public read access via IsAdminOrReadOnly permission
+   - lookup_field='code' for friendly URLs (/pub/ instead of /1/)
+   - Dynamic serializer: Detailed for list/retrieve, Basic for write ops
+   - Annotated queryset with business_count and keyword_count
+   - Added .order_by('code') to avoid pagination warnings
+   - Custom action: keywords() - returns all keywords for a type
+   - Custom action: statistics() - returns relevance score distribution
+
+4. **Updated urls.py**:
+   - Created separate routers to avoid conflicts
+   - business_type_router for BusinessType endpoints
+   - business_router for Business endpoints
+   - URL structure: /api/businesses/business-types/
+
+5. **Created test script**: backend/test_business_type_api.py
+   - All 8 tests pass successfully
+   - Verifies public access, pagination, custom actions, permissions
+
+**Test Results:**
+- ✓ List all types (200) - 4 types found, paginated
+- ✓ Retrieve pub type (200) - Shows weights, counts
+- ✓ Filter by is_active (200)
+- ✓ Keywords action (200) - 23 keywords for pub
+- ✓ Statistics action (200) - Score distribution
+- ✓ Write without auth (403) - Correctly rejected
+- ✓ Permissions working as expected
+
+**Files Modified:**
+- backend/businesses/permissions.py (created)
+- backend/businesses/serializers.py
+- backend/businesses/views.py
+- backend/businesses/urls.py
+- backend/test_business_type_api.py (created)
+
+**API Endpoints Created:**
+- GET /api/businesses/business-types/ - List all types
+- GET /api/businesses/business-types/{code}/ - Retrieve specific type
+- GET /api/businesses/business-types/{code}/keywords/ - Get type keywords
+- GET /api/businesses/business-types/{code}/statistics/ - Get relevance stats
+- POST/PUT/DELETE /api/businesses/business-types/ - Admin only
+
+Ready for human review and merge.
