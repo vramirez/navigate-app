@@ -1,7 +1,7 @@
 ---
 id: task-18.4
 title: 'Create User Profile API Endpoint'
-status: To Do
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
@@ -162,13 +162,36 @@ curl -H "Authorization: Token $TOKEN" http://localhost:8000/api/businesses/auth/
 
 ## Acceptance Criteria
 
-- [ ] Endpoint returns 200 for authenticated users
-- [ ] Response includes user data (id, username, email)
-- [ ] Response includes business data with business_type_details nested
-- [ ] Response includes business_type_code for quick access
-- [ ] Returns appropriate error for unauthenticated requests
-- [ ] Handles users without businesses gracefully (business: null)
-- [ ] business_type_details includes code, display_name, icon
+- [x] Endpoint returns 200 for authenticated users
+- [x] Response includes user data (id, username, email)
+- [x] Response includes business data with business_type_details nested
+- [x] Response includes business_type_code for quick access
+- [x] Returns appropriate error for unauthenticated requests
+- [x] Handles users without businesses gracefully (business: null)
+- [x] business_type_details includes code, display_name, icon
+
+## Progress Log
+
+### 2025-10-28 - Implementation Complete
+- Created BusinessTypeSerializer in [businesses/serializers.py:6-10](backend/businesses/serializers.py#L6-L10)
+- Updated BusinessSerializer with business_type_details nested field
+- Implemented user_profile view in [businesses/views.py:73-110](backend/businesses/views.py#L73-L110)
+- Added URL routing in [businesses/urls.py:15](backend/businesses/urls.py#L15)
+- Endpoint live at `/api/businesses/auth/profile/`
+- Handles authenticated/unauthenticated requests correctly
+- Gracefully handles users without businesses
+- Commit: 018fa6c (merged to main)
+
+### 2025-10-29 - Tests Added
+- Comprehensive test suite created in `backend/businesses/tests/test_profile_api.py`
+- 6 tests covering all scenarios (authenticated, unauthenticated, no business, inactive business, etc.)
+- Commit: 8bef42d (on branch task-18.4-user-profile-endpoint)
+- Tests ready to merge to main
+
+### 2025-10-29 - Task Marked Complete
+- All acceptance criteria verified and checked
+- Implementation verified as working on main branch
+- Status updated to Done
 
 ## Notes
 
