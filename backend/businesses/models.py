@@ -2,26 +2,104 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 
+
+class BusinessType(models.Model):
+    """
+    Dynamic business type configuration (NOT hardcoded)
+    Stores all business types and their relevance calculation parameters
+    """
+
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        db_index=True,
+        verbose_name='Código',
+        help_text='Identificador único (pub, restaurant, coffee_shop, bookstore)'
+    )
+    display_name = models.CharField(
+        max_length=100,
+        verbose_name='Nombre (English)'
+    )
+    display_name_es = models.CharField(
+        max_length=100,
+        verbose_name='Nombre (Español)'
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name='Descripción'
+    )
+    icon = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Icono',
+        help_text='Font Awesome icon class (e.g., fa-beer, fa-utensils)'
+    )
+
+    # Relevance calculation weights (must sum to ~1.0)
+    suitability_weight = models.FloatField(
+        default=0.3,
+        verbose_name='Peso de idoneidad',
+        help_text='Peso del business_suitability_score (0.0-1.0)'
+    )
+    keyword_weight = models.FloatField(
+        default=0.2,
+        verbose_name='Peso de palabras clave',
+        help_text='Peso del matching de keywords (0.0-1.0)'
+    )
+    event_scale_weight = models.FloatField(
+        default=0.2,
+        verbose_name='Peso de escala de evento',
+        help_text='Peso de la escala del evento (0.0-1.0)'
+    )
+    neighborhood_weight = models.FloatField(
+        default=0.3,
+        verbose_name='Peso de proximidad',
+        help_text='Peso de cercanía geográfica (0.0-1.0)'
+    )
+
+    # Thresholds (configurable per type)
+    min_relevance_threshold = models.FloatField(
+        default=0.5,
+        verbose_name='Umbral mínimo de relevancia',
+        help_text='Mínimo relevance_score para mostrar artículo (0.0-1.0)'
+    )
+    min_suitability_threshold = models.FloatField(
+        default=0.5,
+        verbose_name='Umbral mínimo de idoneidad',
+        help_text='Mínimo business_suitability_score para procesar (0.0-1.0)'
+    )
+
+    # Status
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Activo'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Tipo de negocio'
+        verbose_name_plural = 'Tipos de negocio'
+        ordering = ['display_name']
+
+    def __str__(self):
+        return f"{self.display_name_es} ({self.code})"
+
+
 class Business(models.Model):
-    BUSINESS_TYPES = [
-        ('coffee_shop', 'Cafetería'),
-        ('restaurant', 'Restaurante'),
-        ('pub', 'Pub/Bar'),
-        ('bookstore', 'Librería'),
-    ]
-    
     CITIES = [
         ('medellin', 'Medellín'),
         ('bogota', 'Bogotá'),
         ('cartagena', 'Cartagena'),
         ('barranquilla', 'Barranquilla'),
     ]
-    
+
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='businesses')
     name = models.CharField(max_length=200, verbose_name='Nombre del negocio')
-    business_type = models.CharField(
-        max_length=50, 
-        choices=BUSINESS_TYPES,
+    business_type = models.ForeignKey(
+        BusinessType,
+        on_delete=models.PROTECT,  # Cannot delete type if businesses exist
+        related_name='businesses',
         verbose_name='Tipo de negocio'
     )
     city = models.CharField(
@@ -179,9 +257,10 @@ class BusinessTypeKeyword(models.Model):
     Keywords for matching articles to business types (shared across all businesses of that type).
     Different from BusinessKeywords which are per-individual-business custom keywords.
     """
-    business_type = models.CharField(
-        max_length=50,
-        choices=Business.BUSINESS_TYPES,
+    business_type = models.ForeignKey(
+        BusinessType,
+        on_delete=models.CASCADE,
+        related_name='keywords',
         verbose_name='Tipo de negocio'
     )
     keyword = models.CharField(

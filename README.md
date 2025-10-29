@@ -11,6 +11,7 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 ✅ **Phase 1 Complete**: Core infrastructure, models, UI
 ✅ **Phase 2 Complete**: Advanced news crawler system with real data ingestion
 🔄 **Phase 3 In Progress**: Frontend integration and ML engine enhancement
+  - 🔄 **task-18**: Per-business-type relevance scoring (Database ✅ | Backend ⚠️ | Frontend ⚠️)
 📋 **Phase 4 Planned**: Advanced ML features and deployment
 
 ## Technology Stack
@@ -34,7 +35,8 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 ### Core ML Components
 - **Text Processing**: spaCy Spanish models for NLP
 - **Event Detection**: Automated extraction from news content (event type, dates, venues)
-- **Business Matching**: Keyword relevance scoring algorithm
+- **Business Matching**: Per-business-type keyword relevance scoring algorithm
+- **Per-Type Relevance Scoring**: Each article gets 4 separate scores (pub, restaurant, coffee_shop, bookstore)
 - **Recommendation Generation**: Template-based with ML confidence scores
 - **Feedback Loop**: User ratings improve future recommendations
 
@@ -43,6 +45,19 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 - **Trigger**: Only runs for articles with suitability score >= 0.3
 - **Features Extracted**: Event type, location, dates, attendance, keywords, entities
 - **Comparison Tracking**: Agreement rates and completeness scores stored for analysis
+
+### Business Type System (task-18)
+- **Per-Type Relevance Scoring**: Each article receives 4 separate relevance scores (one per business type)
+- **Dynamic Configuration**: Business types stored in database with customizable parameters
+- **Initial Types**: Pub/Bar, Restaurant, Coffee Shop, Bookstore
+- **Personalized Filtering**: Users see articles filtered and ranked by THEIR business type's relevance score
+- **Configurable Weights**: Each business type has adjustable weights for:
+  - Suitability (30%): Overall business applicability
+  - Keywords (20%): Business-type-specific keyword matching
+  - Event Scale (20%): Event size and attendance relevance
+  - Neighborhood (30%): Geographic proximity to business
+- **Thresholds**: Configurable minimum scores per business type (default: 0.5)
+- **Admin Configurable**: All parameters adjustable via Django admin (no code changes needed)
 
 ## Quick Start
 
@@ -279,8 +294,11 @@ The project uses Docker for consistent development across environments. See `/do
 
 ```
 backend/
+├── businesses/
+│   ├── models.py           # Business, BusinessType, BusinessTypeKeyword
+│   └── api/                # Business and BusinessType APIs
 ├── news/
-│   ├── models.py           # NewsSource, NewsArticle, CrawlHistory
+│   ├── models.py           # NewsSource, NewsArticle, CrawlHistory, ArticleBusinessTypeRelevance
 │   ├── admin.py            # Enhanced admin with crawler controls
 │   ├── services/           # Crawler services
 │   │   ├── rss_discovery.py      # RSS feed discovery
@@ -289,7 +307,16 @@ backend/
 │   │   └── crawler_orchestrator.py # Main coordination service
 │   └── api/
 │       └── crawler.py      # Crawler management APIs
+├── ml_engine/
+│   ├── business_matcher.py # Per-type relevance calculation
+│   └── orchestrator.py     # ML pipeline coordination
 ```
+
+**Key Models:**
+- `BusinessType`: Configurable business type with relevance calculation weights
+- `ArticleBusinessTypeRelevance`: Per-type relevance scores for each article (4 scores per article)
+- `Business`: Business profile linked to BusinessType (FK relationship)
+- `NewsArticle`: News content with multiple relevance scores via ArticleBusinessTypeRelevance
 
 ## Development Features
 

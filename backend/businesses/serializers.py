@@ -1,5 +1,29 @@
 from rest_framework import serializers
-from .models import Business, BusinessKeywords, AdminUser
+from django.db.models import Count
+from .models import Business, BusinessKeywords, AdminUser, BusinessType
+
+
+class BusinessTypeSerializer(serializers.ModelSerializer):
+    """Basic serializer for BusinessType (lightweight)"""
+    class Meta:
+        model = BusinessType
+        fields = ['code', 'display_name', 'display_name_es', 'icon']
+
+
+class DetailedBusinessTypeSerializer(serializers.ModelSerializer):
+    """Detailed serializer for BusinessType including weights, thresholds, and counts"""
+    business_count = serializers.IntegerField(read_only=True)
+    keyword_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = BusinessType
+        fields = [
+            'id', 'code', 'display_name', 'display_name_es', 'icon',
+            'suitability_weight', 'keyword_weight', 'event_scale_weight', 'neighborhood_weight',
+            'min_relevance_threshold', 'min_suitability_threshold',
+            'is_active', 'business_count', 'keyword_count', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
 
 
 class BusinessKeywordsSerializer(serializers.ModelSerializer):
@@ -11,11 +35,12 @@ class BusinessKeywordsSerializer(serializers.ModelSerializer):
 class BusinessSerializer(serializers.ModelSerializer):
     keywords = BusinessKeywordsSerializer(many=True, read_only=True)
     recommendations_count = serializers.SerializerMethodField()
-    
+    business_type_details = BusinessTypeSerializer(source='business_type', read_only=True)
+
     class Meta:
         model = Business
         fields = [
-            'id', 'owner', 'name', 'business_type', 'city', 'description',
+            'id', 'owner', 'name', 'business_type', 'business_type_details', 'city', 'description',
             'address', 'phone', 'email', 'website', 'target_audience',
             'capacity', 'staff_count', 'email_notifications',
             'recommendation_frequency',

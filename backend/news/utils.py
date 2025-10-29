@@ -48,7 +48,6 @@ def calculate_feature_completeness(article):
 
     # Critical fields (always expected if features_extracted=True)
     critical_fields = [
-        'business_relevance_score',
         'business_suitability_score',
         'urgency_score',
         'sentiment_score',

@@ -47,6 +47,8 @@ class NewsSourceSerializer(serializers.ModelSerializer):
 class NewsArticleSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(source='source.name', read_only=True)
     source_country = serializers.CharField(source='source.country', read_only=True)
+    user_relevance = serializers.FloatField(read_only=True, required=False)
+    type_scores = serializers.SerializerMethodField()
 
     class Meta:
         model = NewsArticle
@@ -54,7 +56,7 @@ class NewsArticleSerializer(serializers.ModelSerializer):
             'id', 'source', 'source_name', 'source_country', 'title', 'content', 'first_paragraph', 'url',
             'author', 'published_date', 'section', 'crawl_section',
             # Legacy fields (Phase 1)
-            'event_type', 'event_date', 'event_location', 'business_relevance_score',
+            'event_type', 'event_date', 'event_location',
             # ML extracted fields (Phase 3 - task-4)
             'event_type_detected', 'event_subtype', 'primary_city', 'neighborhood',
             'venue_name', 'venue_address', 'latitude', 'longitude',
@@ -64,13 +66,63 @@ class NewsArticleSerializer(serializers.ModelSerializer):
             'feature_extraction_confidence', 'feature_completeness_score',
             # Geographic relevance fields (task-13)
             'event_country', 'colombian_involvement',
+            # Per-type relevance (task-18)
+            'user_relevance', 'type_scores',
             # Other fields
             'extracted_keywords', 'entities', 'sentiment_score',
             'processing_error', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at', 'features_extracted',
                            'feature_extraction_date', 'feature_extraction_confidence',
-                           'feature_completeness_score']
+                           'feature_completeness_score', 'user_relevance']
+
+    def get_type_scores(self, obj):
+        """
+        Get per-type relevance scores for this article.
+        Only included if request has ?include_type_scores=true parameter.
+
+        Returns dict with structure:
+        {
+            'pub': {
+                'relevance_score': 0.85,
+                'suitability': 0.30,
+                'keyword': 0.20,
+                'event_scale': 0.20,
+                'neighborhood': 0.15,
+                'matching_keywords': ['cerveza', 'fútbol']
+            },
+            ...
+        }
+        """
+        request = self.context.get('request')
+        if not request:
+            return None
+
+        # Handle both DRF Request and Django WSGIRequest
+        query_params = getattr(request, 'query_params', None) or getattr(request, 'GET', {})
+        if not query_params.get('include_type_scores'):
+            return None
+
+        # Import here to avoid circular import
+        from .models import ArticleBusinessTypeRelevance
+
+        # Fetch all relevance scores for this article
+        relevance_records = ArticleBusinessTypeRelevance.objects.filter(
+            article=obj
+        ).select_related('business_type')
+
+        type_scores = {}
+        for record in relevance_records:
+            type_scores[record.business_type.code] = {
+                'relevance_score': record.relevance_score,
+                'suitability': record.suitability_component,
+                'keyword': record.keyword_component,
+                'event_scale': record.event_scale_component,
+                'neighborhood': record.neighborhood_component,
+                'matching_keywords': record.matching_keywords or []
+            }
+
+        return type_scores if type_scores else None
 
 
 class SocialMediaPostSerializer(serializers.ModelSerializer):
@@ -79,8 +131,7 @@ class SocialMediaPostSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'platform', 'post_id', 'author_username', 'content',
             'published_date', 'engagement_metrics', 'location_tags',
-            'business_relevance_score', 'extracted_keywords',
-            'sentiment_score', 'processed_at', 'created_at'
+            'extracted_keywords', 'sentiment_score', 'processed_at', 'created_at'
         ]
         read_only_fields = ['created_at', 'processed_at']
 

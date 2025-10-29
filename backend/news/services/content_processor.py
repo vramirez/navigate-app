@@ -638,9 +638,10 @@ class ContentProcessorService:
         """Clean old articles to prevent database bloat"""
         cutoff_date = timezone.now() - timedelta(days=days_to_keep)
 
+        # TODO task-18: Update to use per-type relevance scores
         deleted_count = NewsArticle.objects.filter(
             created_at__lt=cutoff_date,
-            business_relevance_score__lt=0.3  # Only delete low-relevance articles
+            business_suitability_score__lt=0.3  # Only delete low-suitability articles
         ).delete()[0]
 
         return {'deleted_articles': deleted_count}
