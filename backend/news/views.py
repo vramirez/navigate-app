@@ -132,21 +132,17 @@ class SocialMediaPostViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = SocialMediaPost.objects.all()
-        
+
         platform = self.request.query_params.get('platform')
         location = self.request.query_params.get('location')
-        min_relevance = self.request.query_params.get('min_relevance')
-        
+        # Note: min_relevance filter removed as business_relevance_score field was deprecated
+        # in favor of per-business-type relevance system (task-18)
+
         if platform:
             queryset = queryset.filter(platform=platform)
         if location:
             queryset = queryset.filter(location_tags__icontains=location)
-        if min_relevance:
-            try:
-                queryset = queryset.filter(business_relevance_score__gte=float(min_relevance))
-            except ValueError:
-                pass
-                
+
         return queryset.order_by('-published_date')
 
 

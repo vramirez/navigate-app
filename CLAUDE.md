@@ -7,7 +7,7 @@
 3. Create or update task before starting work (use backlog CLI or Edit tool)
 4. Work on dedicated feature branch: `git checkout -b task-X-description`
 5. Update task status as you progress (To Do → In Progress → Review)
-6. Make every code change as simple as possible - avoid massive or complex changes
+6. Make every code change as simple as possible - avoid massive or complex changes. Make or modify unit tests (pytest for python code) for every feature.
 7. Every change should impact as little code as possible - simplicity is key
 8. Mark task as "Review" when ready for human validation
 9. Add detailed implementation notes to task's Progress Log section
