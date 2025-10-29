@@ -338,12 +338,12 @@ class NewsArticleAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         'source', 'event_type', 'crawl_section',
-        'published_date', 'processing_status'
+        'published_date'
     ]
     search_fields = ['title', 'content', 'author', 'crawl_section']
     readonly_fields = [
         'source', 'title', 'content', 'first_paragraph', 'url', 'author', 'published_date',
-        'section', 'crawl_section', 'created_at', 'updated_at', 'processing_status',
+        'section', 'crawl_section', 'created_at', 'updated_at',
         'business_suitability_score', 'type_scores_summary'
     ]
     date_hierarchy = 'published_date'
@@ -367,7 +367,7 @@ class NewsArticleAdmin(admin.ModelAdmin):
             'description': 'Calculated relevance scores for each business type'
         }),
         ('Estado', {
-            'fields': ('processing_status', 'processing_error', 'created_at', 'updated_at')
+            'fields': ('processing_error', 'created_at', 'updated_at')
         }),
     )
 
@@ -460,10 +460,10 @@ class ArticleBusinessTypeRelevanceAdmin(admin.ModelAdmin):
 
     list_display = [
         'article_title', 'business_type', 'relevance_score',
-        'keyword_component', 'event_scale_component', 'created_at'
+        'keyword_component', 'event_scale_component', 'calculated_at'
     ]
 
-    list_filter = ['business_type', 'created_at']
+    list_filter = ['business_type', 'calculated_at']
 
     search_fields = ['article__title']
 
@@ -471,7 +471,7 @@ class ArticleBusinessTypeRelevanceAdmin(admin.ModelAdmin):
         'article', 'business_type', 'relevance_score',
         'suitability_component', 'keyword_component',
         'event_scale_component', 'neighborhood_component',
-        'matching_keywords', 'created_at'
+        'matching_keywords', 'calculated_at'
     ]
 
     def article_title(self, obj):
