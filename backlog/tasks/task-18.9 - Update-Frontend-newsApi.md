@@ -1,7 +1,7 @@
 ---
 id: task-18.9
 title: 'Update Frontend newsApi.js for Business Type Filtering'
-status: To Do
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
@@ -263,21 +263,46 @@ fetchArticles({
 
 ## Acceptance Criteria
 
-- [ ] fetchArticles requires businessType parameter
-- [ ] fetchArticles throws error if businessType missing
-- [ ] days_ago parameter removed
-- [ ] business_type sent to backend
-- [ ] min_relevance is optional
-- [ ] include_type_scores parameter works
-- [ ] Response includes user_relevance field
-- [ ] fetchBusinessTypes function added
-- [ ] fetchBusinessTypeStatistics function added
-- [ ] All references to business_relevance_score updated
-- [ ] Error handling preserved
+- [x] fetchArticles requires businessType parameter (getDashboardArticles)
+- [x] fetchArticles throws error if businessType missing
+- [x] days_ago parameter removed (uses exclude_past_events)
+- [x] business_type sent to backend
+- [x] min_relevance is optional
+- [x] include_type_scores parameter works
+- [x] Response includes user_relevance field
+- [x] fetchBusinessTypes function added (getBusinessTypes)
+- [x] fetchBusinessTypeStatistics function added (getBusinessTypeStatistics)
+- [x] All references to business_relevance_score updated
+- [x] Error handling preserved
+
+## Progress Log
+
+### 2025-10-29 - Implementation Found Complete ✅
+
+**Status**: Task already fully implemented prior to verification
+
+**Implementation Details**:
+- Function `getDashboardArticles()` in [newsApi.js:105-149](frontend/src/services/newsApi.js#L105-L149) implements all requirements
+- Function `getBusinessTypes()` in [newsApi.js:156-165](frontend/src/services/newsApi.js#L156-L165)
+- Function `getBusinessTypeStatistics()` in [newsApi.js:173-181](frontend/src/services/newsApi.js#L173-L181)
+
+**Key Features**:
+- Validates businessType parameter is required (throws error if missing)
+- Sends business_type to backend API
+- No days_ago parameter (uses exclude_past_events instead)
+- Supports optional minRelevance override
+- Supports includeTypeScores for detailed breakdown
+- Includes comprehensive console logging for debugging
+- Returns user_relevance from backend response
+
+**Verification**:
+- All 11 acceptance criteria verified as complete
+- Implementation exceeds task specifications
+- Ready for use by Dashboard component (task-18.10)
 
 ## Notes
 
-- Requires task-18.5 (backend filtering) complete
-- Requires task-18.8 (AuthContext) for businessType value
+- Requires task-18.5 (backend filtering) complete ✅
+- Requires task-18.8 (AuthContext) for businessType value ✅
 - Breaking change: All components using fetchArticles must pass businessType
 - Components should get businessType from useAuth() hook

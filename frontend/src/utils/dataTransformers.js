@@ -57,7 +57,8 @@ export const transformArticleToNews = (article) => {
     content: article.content || '',
     firstParagraph: article.first_paragraph || article.content || '',
     url: article.url,
-    relevanceScore: article.business_relevance_score,
+    // task-18.10: Use user_relevance (per-type score) with fallback to old field
+    relevanceScore: article.user_relevance ?? article.business_relevance_score ?? 0,
     keywords: article.extracted_keywords || [],
     recommendations: [], // Will be populated by joining with recommendations
   }

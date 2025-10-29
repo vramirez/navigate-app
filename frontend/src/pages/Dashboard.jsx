@@ -20,10 +20,12 @@ import { getDashboardArticles } from '../services/newsApi'
 import { getRecommendationsByArticle } from '../services/recommendationsApi'
 import { joinArticlesWithRecommendations, sortByRelevance } from '../utils/dataTransformers'
 import RelevanceBadge from '../components/RelevanceBadge'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Dashboard() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { user, business, businessTypeCode, isAuthenticated, loading: authLoading } = useAuth()
 
   // State for tracking user interactions
   const [newsLikes, setNewsLikes] = useState({})
@@ -41,11 +43,15 @@ export default function Dashboard() {
     return saved !== null ? JSON.parse(saved) : false // Default to false (hide past events)
   })
 
-  // Fetch articles from API (task-11: pass showPastEvents to control filtering)
+  // Fetch articles from API (task-18.10: pass businessType for per-type filtering)
   const { data: articlesData, isLoading: articlesLoading, error: articlesError } = useQuery(
-    ['dashboardArticles', showPastEvents], // Include showPastEvents in cache key for automatic refetch
-    () => getDashboardArticles({ excludePastEvents: !showPastEvents }),
+    ['dashboardArticles', businessTypeCode, showPastEvents], // Include businessTypeCode in cache key
+    () => getDashboardArticles({
+      businessType: businessTypeCode,
+      excludePastEvents: !showPastEvents
+    }),
     {
+      enabled: !!businessTypeCode && !authLoading, // Only fetch when businessType is available
       staleTime: 5 * 60 * 1000, // 5 minutes
       cacheTime: 10 * 60 * 1000, // 10 minutes
       onError: (error) => {
@@ -115,7 +121,55 @@ export default function Dashboard() {
     navigate(`/news/${articleId}`)
   }
 
-  // Loading state
+  // Auth loading state (task-18.10)
+  if (authLoading) {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-3" style={{color: '#c01b1bff', opacity: 0.55}}>
+            {t('dashboard.welcome')}
+          </h1>
+          <p className="text-lg" style={{color: '#f3e9e9ff', opacity: 0.55}}>
+            Cargando tu perfil...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Not authenticated state (task-18.10)
+  if (!isAuthenticated) {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-3" style={{color: '#c01b1bff', opacity: 0.55}}>
+            {t('dashboard.welcome')}
+          </h1>
+          <p className="text-lg text-gray-600">
+            Por favor inicia sesión para ver tu dashboard
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // No business state (task-18.10)
+  if (!business || !businessTypeCode) {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-3" style={{color: '#c01b1bff', opacity: 0.55}}>
+            {t('dashboard.welcome')}
+          </h1>
+          <p className="text-lg text-gray-600">
+            No se encontró un negocio asociado a tu cuenta. Por favor contacta a soporte.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Articles loading state
   if (articlesLoading || recommendationsLoading) {
     return (
       <div>
@@ -236,9 +290,17 @@ export default function Dashboard() {
     <div>
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-4xl font-bold" style={{color: '#c01b1bff', opacity: 0.55}}>
-            {t('dashboard.welcome')}
-          </h1>
+          <div>
+            <h1 className="text-4xl font-bold" style={{color: '#c01b1bff', opacity: 0.55}}>
+              {t('dashboard.welcome')}
+            </h1>
+            {/* Business info (task-18.10) */}
+            {business && (
+              <p className="text-sm text-gray-500 mt-1">
+                {business.name} • {business.business_type_details?.display_name || businessTypeCode}
+              </p>
+            )}
+          </div>
 
           {/* Filter Toggles (task-11) */}
           <div className="flex items-center gap-4">
