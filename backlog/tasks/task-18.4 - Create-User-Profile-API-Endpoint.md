@@ -1,7 +1,7 @@
 ---
 id: task-18.4
 title: 'Create User Profile API Endpoint'
-status: To Do
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
@@ -175,3 +175,50 @@ curl -H "Authorization: Token $TOKEN" http://localhost:8000/api/businesses/auth/
 - Assumes one business per user (future: handle multiple businesses)
 - Frontend will use business_type_code to filter articles
 - select_related used for performance (avoid N+1 queries)
+
+## Progress Log
+
+### 2025-10-29 - Implementation Found and Tests Added
+
+**Status**: Endpoint was already fully implemented ✅
+
+**Findings**:
+- `/api/businesses/auth/profile/` endpoint already exists in `backend/businesses/views.py:73-110`
+- `user_profile` function-based view correctly implemented with:
+  - IsAuthenticated permission
+  - Returns user data (id, username, email, first_name, last_name)
+  - Returns business data with business_type_details nested
+  - Returns business_type_code for quick access
+  - Handles users without businesses gracefully (returns null)
+  - Uses select_related('business_type') for performance
+- URL already registered in `backend/businesses/urls.py:15`
+- BusinessTypeSerializer already exists in `backend/businesses/serializers.py:6-10`
+- BusinessSerializer already includes business_type_details field
+
+**Work Completed**:
+- Created `backend/businesses/tests/` directory
+- Added `test_profile_api.py` with comprehensive pytest tests:
+  - test_authenticated_user_with_business ✅
+  - test_authenticated_user_without_business ✅
+  - test_unauthenticated_request ✅
+  - test_inactive_business_not_returned ✅
+  - test_multiple_businesses_returns_active_one ✅
+  - test_response_structure ✅
+- All 6 tests pass successfully
+
+**Files Modified**:
+- Created: `backend/businesses/tests/__init__.py`
+- Created: `backend/businesses/tests/test_profile_api.py` (208 lines)
+
+**Acceptance Criteria Status**:
+- [x] Endpoint returns 200 for authenticated users
+- [x] Response includes user data (id, username, email)
+- [x] Response includes business data with business_type_details nested
+- [x] Response includes business_type_code for quick access
+- [x] Returns appropriate error for unauthenticated requests (403 Forbidden)
+- [x] Handles users without businesses gracefully (business: null)
+- [x] business_type_details includes code, display_name, icon
+
+**Next Steps**:
+- Task ready for review
+- Frontend tasks (18.9, 18.10) can now proceed once this is merged
