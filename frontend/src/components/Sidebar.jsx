@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import {
@@ -10,9 +10,11 @@ import {
   NewspaperIcon,
   Cog6ToothIcon,
   XMarkIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import LanguageSwitcher from './LanguageSwitcher'
+import { useAuth } from '../contexts/AuthContext'
 
 const navigation = [
   { name: 'nav.dashboard', href: '/dashboard', icon: HomeIcon },
@@ -25,6 +27,13 @@ const navigation = [
 export default function Sidebar({ open, setOpen }) {
   const { t } = useTranslation()
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user, business, businessTypeCode, logout, isAuthenticated } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
@@ -63,12 +72,43 @@ export default function Sidebar({ open, setOpen }) {
             )
           })}
         </nav>
-        <div className="flex-shrink-0 p-4 border-t border-gray-200">
-          <p className="text-xs text-gray-500 mb-2">
-            {t('app.tagline')}
-          </p>
-          <div className="hidden lg:block">
-            <LanguageSwitcher />
+        <div className="flex-shrink-0 border-t border-gray-200">
+          {/* User info and logout */}
+          {isAuthenticated && (
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-navigate-100 flex items-center justify-center">
+                    <span className="text-navigate-700 font-semibold text-sm">
+                      {business?.name?.charAt(0) || user?.username?.charAt(0) || '?'}
+                    </span>
+                  </div>
+                </div>
+                <div className="ml-3 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {business?.name || user?.username || 'Usuario'}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {businessTypeCode ? t(`businessTypes.${businessTypeCode}`) : user?.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="mt-3 w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navigate-500"
+              >
+                <ArrowRightOnRectangleIcon className="h-5 w-5 mr-2" />
+                Cerrar sesión
+              </button>
+            </div>
+          )}
+          <div className="p-4">
+            <p className="text-xs text-gray-500 mb-2">
+              {t('app.tagline')}
+            </p>
+            <div className="hidden lg:block">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </div>
