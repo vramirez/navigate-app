@@ -1,7 +1,7 @@
 ---
 id: task-18.14
 title: 'Test System with Different Business Types'
-status: To Do
+status: Review
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
@@ -12,6 +12,7 @@ dependencies: [task-18.10, task-18.12]
 parent: task-18
 priority: high
 estimated_hours: 3
+actual_hours: 1.5
 ---
 
 ## Description
@@ -426,3 +427,81 @@ docker exec docker-backend-1 python test/compare_business_types.py
 - Document any unexpected behavior for investigation
 - Test scripts can be run regularly to verify system health
 - Consider adding automated integration tests based on these
+
+## Progress Log
+
+### 2025-10-30 - Automated Tests Complete (Awaiting Manual Frontend Testing)
+
+**Test Setup - COMPLETE**
+- Created `/app/test/create_test_users.py` script
+- Created 4 test users:
+  - `pubowner` (Test Pub El Poblado - pub)
+  - `restaurantowner` (Test Restaurant Gourmet - restaurant)
+  - `coffeeowner` (Test Coffee Shop Artisan - coffee_shop)
+  - `bookowner` (Test Bookstore Literary - bookstore)
+- All users have password: `test123`
+
+**Test 1: Login and Profile Verification - PENDING MANUAL TEST**
+- Requires manual frontend testing by Victor
+- Test users are ready for login testing
+- Need to verify:
+  - Dashboard shows correct business name and type
+  - Browser console shows correct businessTypeCode
+  - Each user sees their own business info
+
+**Test 2: Article Filtering by Business Type - PASSED** ✓
+- Created `/app/test/test_article_filtering.py`
+- Results:
+  - pubowner: 4 articles
+  - restaurantowner: 1 article
+  - coffeeowner: 1 article
+  - bookowner: 1 article
+- **Conclusion**: Different business types see different article counts - system working correctly
+
+**Test 3: Relevance Score Validation - PASSED** ✓
+- Created `/app/test/test_relevance_scores.py`
+- Tested article: "Cinco opciones de talleres de movilidad en Colombia"
+  - pub: 0.32 (keywords: ron, liga, música)
+  - bookstore: 0.28 (keywords: firma, taller)
+  - coffee_shop: 0.25 (keywords: té)
+  - restaurant: 0.23 (no keywords)
+- Score distribution verified:
+  - pub: avg 0.46, range 0.30-0.65 (8 articles)
+  - restaurant: avg 0.37, range 0.23-0.50 (8 articles)
+  - coffee_shop: avg 0.38, range 0.25-0.56 (8 articles)
+  - bookstore: avg 0.38, range 0.28-0.50 (8 articles)
+- **Conclusion**: Scores vary by type, components tracked correctly, keywords matched appropriately
+
+**Test 4: Frontend Filter Controls - PENDING MANUAL TEST**
+- Requires manual frontend testing by Victor
+- Need to verify:
+  - Minimum relevance filter updates article count
+  - Event date filter works correctly
+  - Filter controls respond instantly
+  - Scores match filter threshold
+
+**Test 5: Cross-Type Comparison - PASSED** ✓
+- Created `/app/test/compare_business_types.py`
+- Found distinctive relevance patterns:
+  - "Pandora reveló detalles de su nuevo álbum" - pub: 0.65, coffee_shop: 0.56, bookstore: 0.50, restaurant: 0.50
+  - "Estos son los convocados de Colombia para encarar el Mundial" - pub: 0.60, restaurant: 0.46, coffee_shop: 0.43, bookstore: 0.41
+  - "Ella es la ganadora del Desafío" - pub: 0.50, others: 0.35
+- **Conclusion**: System effectively differentiates relevance by business type
+
+**Overall Results**
+- 3 of 5 tests passed (automated tests)
+- 2 of 5 tests pending manual verification (frontend tests)
+- All backend functionality working correctly
+- Per-business-type filtering and scoring system operational
+
+**Test Scripts Created**
+- `/app/test/create_test_users.py` - Creates test accounts
+- `/app/test/test_article_filtering.py` - Tests article filtering by type
+- `/app/test/test_relevance_scores.py` - Validates score calculation
+- `/app/test/compare_business_types.py` - Compares cross-type relevance
+
+**Action Items for Victor**
+1. Run manual Test 1: Login and verify profile displays correctly
+2. Run manual Test 4: Test frontend filter controls
+3. Approve or request changes based on frontend behavior
+4. Merge feature branch if tests pass
