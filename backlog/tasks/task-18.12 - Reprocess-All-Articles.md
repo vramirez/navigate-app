@@ -1,10 +1,11 @@
 ---
 id: task-18.12
 title: 'Reprocess All Articles with Per-Type Scoring'
-status: To Do
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
+completed_date: '2025-10-30'
 labels:
   - backend
   - ml-engine
@@ -13,6 +14,7 @@ dependencies: [task-18.3, task-18.11]
 parent: task-18
 priority: high
 estimated_hours: 2
+actual_hours: 0.5
 ---
 
 ## Description
@@ -314,3 +316,49 @@ curl "http://localhost:8000/api/news/articles/?business_type=bookstore" | jq len
 - Large datasets: Consider running overnight
 - Monitor database disk space (type scores add data)
 - Future: Implement incremental processing (only articles without type scores)
+
+## Progress Log
+
+### 2025-10-30 - Implementation Complete
+
+**Created Management Command**
+- Created `backend/news/management/commands/process_articles.py`
+- Implemented --reprocess flag to process all articles
+- Implemented --limit flag for batch testing
+- Implemented --batch-size flag for commit frequency
+- Added progress tracking and error handling
+
+**Test Run**
+- Successfully tested with --limit 5 flag
+- Verified ArticleBusinessTypeRelevance records created
+- All 5 articles processed successfully
+
+**Full Reprocessing**
+- Ran `docker exec docker-backend-1 python manage.py process_articles --reprocess`
+- Processed all 20 articles successfully (100% success rate)
+- Created 32 ArticleBusinessTypeRelevance records
+  - 8 articles created 4 type scores each (one per business type)
+  - 12 articles created 0 type scores (below relevance threshold)
+- Average scores per business type:
+  - pub: 8 scores, avg 0.46
+  - restaurant: 8 scores, avg 0.37
+  - coffee_shop: 8 scores, avg 0.38
+  - bookstore: 8 scores, avg 0.38
+
+**API Verification**
+- Tested API filtering by business_type parameter
+- Results per business type (with min_relevance_threshold=0.5):
+  - pub: 4 articles
+  - restaurant: 1 article
+  - coffee_shop: 1 article
+  - bookstore: 1 article
+- Per-type filtering working correctly
+
+**Files Modified**
+- Created: backend/news/management/__init__.py
+- Created: backend/news/management/commands/__init__.py
+- Created: backend/news/management/commands/process_articles.py
+
+**Committed**
+- Branch: task-18.12-reprocess-articles
+- Commit: c0edd88
