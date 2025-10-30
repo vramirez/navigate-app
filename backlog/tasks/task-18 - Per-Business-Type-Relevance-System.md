@@ -1,10 +1,11 @@
 ---
 id: task-18
 title: 'Per-Business-Type Relevance System (Epic)'
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
+completed_date: '2025-10-30'
 labels:
   - epic
   - architecture

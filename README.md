@@ -10,9 +10,11 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 
 ✅ **Phase 1 Complete**: Core infrastructure, models, UI
 ✅ **Phase 2 Complete**: Advanced news crawler system with real data ingestion
-🔄 **Phase 3 In Progress**: Frontend integration and ML engine enhancement
-  - 🔄 **task-18**: Per-business-type relevance scoring (Database ✅ | Backend ⚠️ | Frontend ⚠️)
-📋 **Phase 4 Planned**: Advanced ML features and deployment
+✅ **Phase 3 Complete**: Frontend integration and ML engine enhancement
+  - ✅ **task-18**: Per-business-type relevance scoring (All phases complete, merged 2025-10-30)
+🔄 **Phase 4 In Progress**: Advanced ML features, authentication, and deployment
+  - 🔄 **task-9**: ML enhancement (broadcastability ✅, gastronomy subtypes in progress)
+  - 🔄 **task-19**: Login authentication (CSRF resolved, needs final testing)
 
 ## Technology Stack
 
@@ -46,7 +48,7 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
 - **Features Extracted**: Event type, location, dates, attendance, keywords, entities
 - **Comparison Tracking**: Agreement rates and completeness scores stored for analysis
 
-### Business Type System (task-18)
+### Business Type System (task-18) ✅ DEPLOYED
 - **Per-Type Relevance Scoring**: Each article receives 4 separate relevance scores (one per business type)
 - **Dynamic Configuration**: Business types stored in database with customizable parameters
 - **Initial Types**: Pub/Bar, Restaurant, Coffee Shop, Bookstore
@@ -58,6 +60,7 @@ NaviGate analyzes local news, events, and social media to provide actionable bus
   - Neighborhood (30%): Geographic proximity to business
 - **Thresholds**: Configurable minimum scores per business type (default: 0.5)
 - **Admin Configurable**: All parameters adjustable via Django admin (no code changes needed)
+- **Management Command**: `python manage.py process_articles --reprocess` for batch processing
 
 ## Quick Start
 

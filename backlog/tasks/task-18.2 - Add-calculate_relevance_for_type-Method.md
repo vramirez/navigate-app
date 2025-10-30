@@ -1,7 +1,7 @@
 ---
 id: task-18.2
 title: 'Add calculate_relevance_for_type Method to BusinessMatcher'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

@@ -1,7 +1,7 @@
 ---
 id: task-18.11
 title: 'Create Seed Command for Business Type Keywords'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

@@ -1,7 +1,7 @@
 ---
 id: task-18.7
 title: 'Update NewsArticleSerializer to Include Per-Type Scores'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

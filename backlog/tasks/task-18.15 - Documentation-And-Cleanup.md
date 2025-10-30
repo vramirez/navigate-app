@@ -1,7 +1,7 @@
 ---
 id: task-18.15
 title: 'Documentation and Cleanup for Per-Type System'
-status: To Do
+status: In Progress
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

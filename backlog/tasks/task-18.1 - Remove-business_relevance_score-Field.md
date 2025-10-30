@@ -1,7 +1,7 @@
 ---
 id: task-18.1
 title: 'Remove business_relevance_score from NewsArticle Model'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

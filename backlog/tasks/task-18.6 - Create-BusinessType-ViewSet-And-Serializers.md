@@ -1,7 +1,7 @@
 ---
 id: task-18.6
 title: 'Create BusinessType ViewSet and Serializers'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

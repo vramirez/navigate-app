@@ -1,7 +1,7 @@
 ---
 id: task-18.8
 title: 'Create Frontend AuthContext with Business Type'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

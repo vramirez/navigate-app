@@ -1,7 +1,7 @@
 ---
 id: task-18.13
 title: 'Update Admin Interfaces for Business Types'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

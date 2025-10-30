@@ -1,7 +1,7 @@
 ---
 id: task-18.5
 title: 'Update NewsArticleViewSet to Filter by business_type'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'

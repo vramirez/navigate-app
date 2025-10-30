@@ -1,7 +1,7 @@
 ---
 id: task-18.3
 title: 'Update MLOrchestrator.process_article for Per-Type Scoring'
-status: Review
+status: Done
 assignee:
   - '@claude'
 created_date: '2025-10-28 16:30'
